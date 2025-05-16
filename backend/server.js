@@ -5,6 +5,7 @@ const express = require('express');
 const cors = require('cors');
 const http = require('http'); // Import http module
 const { WebSocketServer } = require('ws'); // Import WebSocketServer
+const path = require('path'); // Make sure path module is imported if not already
 
 const moviesRoute = require('./routes/movies');
 const screeningsRouteModule = require('./routes/screenings'); // Import as a module that exports a function
@@ -172,11 +173,17 @@ const swaggerOptions = {
       },
     ],
   },
-  // Path to the API docs
-  apis: ['./routes/*.js'], // Files containing JSDoc comments
+  // Path to the API docs - Use absolute paths
+  apis: [
+    path.join(__dirname, './routes/auth.js'),
+    path.join(__dirname, './routes/movies.js'),
+    path.join(__dirname, './routes/screenings.js')
+  ], // Files containing JSDoc comments
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
+// You can add this line temporarily to debug the generated spec
+// console.log(JSON.stringify(swaggerSpec, null, 2)); 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Start the HTTP server (which also hosts the WebSocket server)
