@@ -1,9 +1,29 @@
 [
   {
     "id": 1,
-    "movieId": 123,
-    "date": "2025-05-10",
-    "time": "19:30",
-    "ticketsAvailable": 49
+    "movieId": 1241436,
+    "movieTitle": "Warfare",
+    "moviePosterPath": "/srj9rYrjefyWqkLc6l2xjTGeBGO.jpg",
+    "date": "2025-05-17T12:00",
+    "initialTicketsAvailable": 50,
+    "ticketsAvailable": 50
+  },
+  {
+    "id": 2,
+    "movieId": 6,
+    "movieTitle": "I am NIGERIA",
+    "moviePosterPath": "/g1DEqLGcwpXFEMiqViOEkM8h4QZ.jpg",
+    "date": "2025-07-30T15:20",
+    "initialTicketsAvailable": 20,
+    "ticketsAvailable": 19
+  },
+  {
+    "id": 3,
+    "movieId": 617120,
+    "movieTitle": "Test",
+    "moviePosterPath": "/5F6eKWJNHfYgHf2PDsb73fmAdK8.jpg",
+    "date": "2025-05-16T17:42",
+    "initialTicketsAvailable": 20,
+    "ticketsAvailable": 20
   }
 ]

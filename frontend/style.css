@@ -1,384 +1,1674 @@
-/* General Styles */
-body {
-  font-family: Arial, sans-serif;
+/* Modern Cinema App Styling */
+
+/* 1. CSS Variables & Root Configuration */
+:root {
+  --font-primary: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --font-secondary: 'Roboto', sans-serif; /* Optional, for specific elements */
+
+  --color-primary: #007BFF; /* Vibrant Blue */
+  --color-primary-dark: #0056b3;
+  --color-primary-light: #66b3ff;
+
+  --color-secondary: #6c757d; /* Cool Gray */
+  --color-secondary-dark: #545b62;
+  --color-secondary-light: #adb5bd;
+
+  --color-accent: #17a2b8; /* Teal/Cyan Accent */
+  --color-accent-dark: #117a8b;
+
+  --color-success: #28a745; /* Green */
+  --color-danger: #dc3545;  /* Red */
+  --color-warning: #ffc107; /* Yellow */
+  --color-info: #17a2b8;   /* Teal (same as accent here) */
+
+  --color-background-body: #f8f9fa; /* Light Gray */
+  --color-background-card: #ffffff; /* White */
+  --color-background-header: #ffffff;
+  --color-background-footer: #343a40; /* Dark footer example */
+
+  --color-text-primary: #212529;   /* Dark Gray for main text */
+  --color-text-secondary: #495057; /* Medium Gray for less emphasis */
+  --color-text-light: #ffffff;
+  --color-text-muted: #6c757d;    /* Muted gray */
+  --color-text-link: var(--color-primary);
+
+  --border-color: #dee2e6;
+  --border-radius-sm: 0.2rem;
+  --border-radius-md: 0.375rem;
+  --border-radius-lg: 0.5rem;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-xxl: 3rem;
+
+  --transition-fast: all 0.15s ease-in-out;
+  --transition-normal: all 0.3s ease-in-out;
+}
+
+/* 2. Reset & Base Styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  background-color: #f4f4f9;
-  color: #333;
 }
 
-h1 {
-  text-align: center;
-  background-color: #333;
-  color: #fff;
-  padding: 1rem;
-  margin: 0;
+html {
+  font-size: 16px; /* Base font size */
+  scroll-behavior: smooth;
+  height: 100%;
 }
 
-h2 {
-  color: #444;
-  margin-bottom: 1rem;
-}
-
-/* Movies Container */
-#movies-container {
+body {
+  font-family: var(--font-primary);
+  line-height: 1.6;
+  background-color: var(--color-background-body);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100%;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+}
+
+/* 3. Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-secondary, var(--font-primary));
+  font-weight: 600;
+  line-height: 1.3;
+  margin-bottom: var(--spacing-md);
+  color: var(--color-text-primary);
+}
+
+h1 { font-size: 2.25rem; } /* ~36px */
+h2 { font-size: 1.875rem; } /* ~30px */
+h3 { font-size: 1.5rem; }   /* ~24px */
+h4 { font-size: 1.25rem; }  /* ~20px */
+
+p {
+  margin-bottom: var(--spacing-md);
+  color: var(--color-text-secondary);
+}
+
+a {
+  color: var(--color-text-link);
+  text-decoration: none;
+  transition: var(--transition-fast);
+}
+a:hover {
+  color: var(--color-primary-dark);
+  text-decoration: underline;
+}
+
+small {
+  font-size: 0.875em;
+}
+
+/* 4. Layout Components */
+.container { /* This is the initial wrapper in body */
+  width: 100%;
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0; /* Remove padding if it's just for login */
+}
+
+#login-section-wrapper .container { /* If you re-introduce a specific wrapper for login */
+    padding: var(--spacing-xl);
+}
+
+/* Login Section */
+#login-section {
+  display: flex;
   justify-content: center;
-  gap: 1rem;
-  padding: 1rem;
+  align-items: center;
+  min-height: 90vh; /* Make it take most of the viewport height */
+  padding: var(--spacing-xl); /* Padding for the login view itself */
+  background-color: var(--color-background-body); /* Ensure it has a background */
 }
 
-.movie {
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 1rem;
-  width: 200px;
-  text-align: center;
-}
-
-.movie img {
-  max-width: 100%;
-  border-radius: 8px;
-}
-
-.movie h2 {
-  font-size: 1.2rem;
-  margin: 0.5rem 0;
-}
-
-.movie p {
-  font-size: 0.9rem;
-  color: #666;
-}
-
-/* Login Form */
-#login-form {
+#login-form { /* The div wrapping the form */
+  background-color: var(--color-background-card);
+  padding: var(--spacing-xl);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
   max-width: 400px;
-  margin: 2rem auto;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
 }
-
-#login-form label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: bold;
-}
-
-#login-form input {
-  width: 100%;
-  padding: 0.5rem;
-  margin-bottom: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-#login-form button {
-  width: 100%;
-  padding: 0.7rem;
-  background-color: #333;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-}
-
-#login-form button:hover {
-  background-color: #555;
-}
-
-/* Logout Button */
-#logout-button {
-  display: block;
-  margin: 1rem auto;
-  padding: 0.7rem 1.5rem;
-  background-color: #d9534f;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-}
-
-#logout-button:hover {
-  background-color: #c9302c;
-}
-
-/* Manager Dashboard */
-#manager-content {
-  max-width: 70vw; /* Reduced width */
-  margin: 2rem auto;
-  background-color: #ffffff;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem; /* Reduced padding */
-}
-
-#manager-content h2 {
+#login-form h2 {
   text-align: center;
-  color: #333;
-  margin-bottom: 2rem;
-  font-size: 2rem;
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  margin-bottom: var(--spacing-lg);
+  color: var(--color-primary);
 }
 
-/* Form Styling */
-#manager-content form {
+/* Tabs */
+#tabs-container {
+  background-color: var(--color-background-header);
+  box-shadow: var(--shadow-sm);
+  /* margin-bottom: var(--spacing-xl); Removed, tab-content will have padding */
+  width: 100%;
+  flex-grow: 1; /* Allow tabs container to fill remaining space */
   display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  background-color: #f8f9fa;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  flex-direction: column;
 }
 
-#manager-content label {
-  flex: 1 1 100%;
-  font-weight: bold;
-  color: #555;
-  margin-bottom: 0.5rem;
-}
-
-#manager-content input {
-  flex: 1 1 calc(33.33% - 1rem);
-  padding: 0.8rem;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 1rem;
-}
-
-#manager-content button {
-  flex: 1 1 100%;
-  padding: 0.8rem;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: bold;
-  transition: background-color 0.3s ease;
-}
-
-#manager-content button:hover {
-  background-color: #0056b3;
-}
-
-/* Add Screening Form */
-#add-screening-form {
+.tabs { /* This div contains tab buttons and logout */
   display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  background-color: #f8f9fa;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1280px; /* Max width for the tab bar itself */
+  width: 100%;
+  margin: 0 auto; /* Center the tab bar */
+  padding: 0 var(--spacing-lg);
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--color-background-header); /* Ensure background */
+  height: 60px; /* Fixed height for tab bar */
 }
 
-#add-screening-form label {
-  flex: 1 1 100%;
-  font-weight: bold;
-  color: #555;
-  margin-bottom: 0.5rem;
-}
-#message-container {
-  text-align: center;
-  font-size: 1rem;
-  font-weight: bold;
-}
-#add-screening-form input {
-  flex: 1 1 calc(33.33% - 1rem);
-  padding: 0.8rem;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 1rem;
-}
-
-#add-screening-form button {
-  flex: 1 1 100%;
-  padding: 0.8rem;
-  background-color: #28a745;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: bold;
-  transition: background-color 0.3s ease;
-}
-
-#add-screening-form button:hover {
-  background-color: #218838;
-}
-
-/* Screenings Tab */
-#screenings-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
-  margin-top: 1.5rem;
-  padding: 1rem;
-}
-
-.screening {
-  background-color: #ffffff;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  padding: 1rem;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.screening:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-}
-
-.screening p {
-  margin: 0.5rem 0;
-  font-size: 1rem;
-  color: #555;
-}
-
-.screening button {
-  padding: 0.5rem 1rem;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: bold;
-  transition: background-color 0.3s ease;
-}
-
-.screening button:hover {
-  background-color: #0056b3;
-}
-
-/* Tabs Container */
-.tabs {
+.tab-button-group {
   display: flex;
-  justify-content: center;
-  margin-bottom: 1.5rem;
+  height: 100%;
 }
 
 .tab-button {
-  padding: 0.8rem 2rem;
-  margin: 0 0.5rem;
-  background-color: #333;
-  color: #fff;
+  font-family: var(--font-secondary, var(--font-primary));
+  font-weight: 500;
+  padding: 0 var(--spacing-lg); /* Adjust padding for vertical alignment */
+  color: var(--color-text-secondary);
+  background-color: transparent;
   border: none;
-  border-radius: 5px;
+  border-bottom: 3px solid transparent;
   cursor: pointer;
+  transition: var(--transition-normal);
   font-size: 1rem;
-  font-weight: bold;
-  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center; /* Vertically center text */
+  height: 100%;
 }
-
 .tab-button:hover {
-  background-color: #555;
+  color: var(--color-primary);
 }
-
 .tab-button.active {
-  background-color: #007bff;
-  color: #fff;
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
 }
 
 /* Tab Content */
 .tab-content {
-  display: none;
+  padding: var(--spacing-xl); /* Add padding inside each tab content area */
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto; /* Center content */
+  flex-grow: 1;
+  overflow-y: auto; /* Allow scrolling within tab content if it overflows */
 }
 
-.tab-content.active {
+.tab-content > h1,
+.tab-content > h2 {
+  font-size: 2rem;
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--color-primary-dark);
+}
+
+/* 5. Forms (General & Specific) */
+label {
   display: block;
+  font-weight: 500;
+  margin-bottom: var(--spacing-sm);
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
 }
 
-/* Styling for Manager's Screenings List */
-#manager-screenings-list {
-  margin-top: 2rem;
-  padding: 1rem;
-  background-color: #f8f9fa; /* Light background for the list area */
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+input[type="date"],
+input[type="datetime-local"],
+select {
+  display: block;
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+  background-color: var(--color-background-card);
+  background-clip: padding-box;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  margin-bottom: var(--spacing-md);
+}
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+input[type="datetime-local"]:focus,
+select:focus {
+  border-color: var(--color-primary-light);
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(var(--color-primary), 0.25); /* Check variable usage */
+}
+input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
 }
 
-#manager-screenings-list h3 {
+/* Filter Containers */
+.filter-container {
+  background-color: var(--color-background-card);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+  align-items: flex-end;
+}
+.filter-group {
+  flex: 1 1 200px; /* Grow, shrink, basis */
+}
+.filter-group label {
+  font-size: 0.85rem;
+}
+.filter-container input,
+.filter-container select {
+  margin-bottom: 0;
+}
+.filter-container button {
+  height: fit-content; /* Align button with inputs */
+  margin-bottom: 0; /* Overrides default button margin if any */
+}
+
+/* Add Screening Form */
+#add-screening-form {
+  background-color: var(--color-background-card);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: var(--spacing-xl);
+  box-shadow: var(--shadow-md);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-md) var(--spacing-lg);
+  align-items: end; /* Align items to bottom */
+  position: relative; /* For suggestion list positioning */
+}
+#add-screening-form label {
+  margin-bottom: var(--spacing-xs);
+}
+#add-screening-form input {
+  margin-bottom: 0;
+}
+#add-screening-form button[type="submit"] {
+  grid-column: 1 / -1; /* Span full width */
+  margin-top: var(--spacing-md);
+}
+
+/* Movie Title Suggestions for Add Screening Form */
+#movie-title-suggestions {
+  position: absolute;
+  top: calc(100% - var(--spacing-md)); /* Position below the movieTitle input */
+  left: 0;
+  right: 0;
+  background-color: #fff;
+  border: 1px solid var(--border-color);
+  border-top: none;
+  border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 10;
+  /* Find the correct input to position relative to. Assuming movieTitle input is the first child or has a specific class */
+}
+/* If movieTitleInput is the first input in a grid cell: */
+#add-screening-form div:has(#movieTitle) + #movie-title-suggestions {
+    /* More specific positioning might be needed depending on exact grid layout */
+}
+
+.suggestions-list div { /* Class from HTML: .suggestions-list */
+  padding: var(--spacing-sm) var(--spacing-md);
+  cursor: pointer;
+}
+.suggestions-list div:hover {
+  background-color: var(--color-primary-light);
+  color: var(--color-text-light);
+}
+
+
+/* 6. Buttons */
+button, .button { /* General button styling */
+  display: inline-block;
+  font-family: var(--font-primary);
+  font-weight: 500;
   text-align: center;
-  color: #333;
-  margin-bottom: 1.5rem;
-  font-size: 1.5rem;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid transparent;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: 1rem;
+  line-height: 1.5;
+  border-radius: var(--border-radius-md);
+  transition: var(--transition-normal);
+  text-transform: capitalize;
 }
 
+/* Default (Primary) Button */
+button,
+.button,
+button[type="submit"], /* Default submit buttons */
+#apply-screening-filter /* Specific ID if it's a primary action */
+ {
+  color: var(--color-text-light);
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+button:hover,
+.button:hover,
+button[type="submit"]:hover,
+#apply-screening-filter:hover {
+  background-color: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+  color: var(--color-text-light); /* Ensure text color remains light */
+}
+button:focus,
+.button:focus,
+button[type="submit"]:focus,
+#apply-screening-filter:focus {
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.5); /* Direct color for primary focus */
+}
+
+/* Secondary Button */
+.btn-secondary,
+#clear-screening-filter /* Specific ID if it's a secondary action */
+ {
+  color: var(--color-text-light);
+  background-color: var(--color-secondary);
+  border-color: var(--color-secondary);
+}
+.btn-secondary:hover,
+#clear-screening-filter:hover {
+  background-color: var(--color-secondary-dark);
+  border-color: var(--color-secondary-dark);
+}
+.btn-secondary:focus,
+#clear-screening-filter:focus {
+  box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.5); /* Direct color for secondary focus */
+}
+
+
+/* Danger Button (Logout, Delete) */
+.btn-danger {
+  color: var(--color-text-light);
+  background-color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+.btn-danger:hover {
+  background-color: #c82333; /* Darken(var(--color-danger), 10%) */
+  border-color: #bd2130; /* Darken(var(--color-danger), 12%) */
+}
+.btn-danger:focus {
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.5); /* Direct color for danger focus */
+}
+
+/* Success Button */
+.btn-success {
+  color: var(--color-text-light);
+  background-color: var(--color-success);
+  border-color: var(--color-success);
+}
+.btn-success:hover {
+  background-color: #218838; /* Darken */
+  border-color: #1e7e34; /* Darken */
+}
+.btn-success:focus {
+   box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.5);
+}
+
+
+#logout-button {
+  /* Uses .btn-danger, specific adjustments if needed */
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: 0.9rem;
+  margin-left: auto; /* Pushes to the right in flex container .tabs */
+}
+
+/* 7. Cards & Grids (Movies, Screenings) */
+/* These containers are inside .tab-content, which already has padding and max-width */
+#movies-container,
+#screenings-container,
+#manager-screenings-list { /* These are the grid containers */
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); /* Slightly smaller min for more cards */
+  gap: var(--spacing-lg);
+  padding-top: var(--spacing-md); /* Add some space above the grid */
+}
+
+/* Specific grid for manager list items if they need different layout */
+#manager-screenings-list {
+  grid-template-columns: 1fr; /* Manager items are full width list items */
+}
+
+/* Individual Movie Card (dynamically created with class="movie") */
+.movie {
+  background-color: var(--color-background-card);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: var(--transition-normal);
+}
+.movie:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+}
+.movie img {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  display: block;
+  background-color: #eee; /* Placeholder */
+}
+.movie-info {
+  padding: var(--spacing-md);
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+.movie-info h2 { /* Movie title in card */
+  font-size: 1.15rem; /* Slightly smaller for card */
+  margin-bottom: var(--spacing-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.movie-info p {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+.movie-info p.release-date {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin-top: auto; /* Pushes to bottom */
+  padding-top: var(--spacing-sm);
+}
+.movie .edit-movie { /* Button inside movie card */
+  margin: 0 var(--spacing-md) var(--spacing-md) var(--spacing-md); /* Margin around button */
+  align-self: flex-start; /* Align to start if needed, or stretch */
+}
+
+/* Individual Screening Card (dynamically created with class="screening") */
+.screening { /* Assuming this class is used by JS for user view */
+  background-color: var(--color-background-card);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column; /* Stack poster and details */
+  transition: var(--transition-normal);
+}
+.screening:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+}
+.screening-poster { /* Class from JS */
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  background-color: #eee; /* Placeholder */
+}
+.screening-details { /* Class from JS */
+  padding: var(--spacing-md);
+  flex-grow: 1;
+}
+.screening-details h4 {
+  font-size: 1.1rem;
+  margin-bottom: var(--spacing-sm);
+}
+.screening-details p {
+  font-size: 0.9rem;
+  margin-bottom: var(--spacing-sm);
+}
+.screening .reserve-ticket {
+  margin-top: var(--spacing-sm);
+  width: 100%; /* Make button full width of its container */
+}
+
+
+/* Manager Screening List Items (dynamically created with class="manager-screening-item") */
 .manager-screening-item {
-  background-color: #ffffff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background-color: var(--color-background-card);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  display: flex; /* Use flex for horizontal layout */
+  align-items: center;
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  gap: var(--spacing-md);
+  transition: var(--transition-normal);
+}
+.manager-screening-item:hover {
+    box-shadow: var(--shadow-md);
+}
+.manager-screening-poster { /* Class from JS */
+  width: 70px; /* Fixed width for poster */
+  height: 105px; /* Maintain aspect ratio */
+  object-fit: cover;
+  border-radius: var(--border-radius-sm);
+  flex-shrink: 0; /* Prevent poster from shrinking */
+}
+.manager-screening-details { /* Class from JS */
+  flex-grow: 1; /* Allow details to take remaining space */
+}
+.manager-screening-details p {
+  margin: 0 0 var(--spacing-xs) 0;
+  font-size: 0.9rem;
+}
+.manager-screening-details p strong {
+  font-weight: 600; /* Bolder title */
+  color: var(--color-text-primary);
+}
+.manager-screening-actions { /* Class from JS */
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-shrink: 0; /* Prevent buttons from shrinking */
+}
+.manager-screening-actions button {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: 0.85rem;
+}
+
+/* 8. Popover */
+#edit-screening-popover {
+  background-color: var(--color-background-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-lg);
+  width: clamp(320px, 90vw, 450px); /* Responsive width */
+  z-index: 1000;
+  margin: auto; /* Helps center if used as modal */
+}
+#edit-screening-popover::backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(3px);
+}
+#edit-screening-popover-form h3 {
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+  color: var(--color-primary);
+}
+.popover-actions { /* Div wrapping buttons in popover */
+  display: flex;
+  justify-content: flex-end; /* Align buttons to the right */
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+  border-top: 1px solid var(--border-color);
+  padding-top: var(--spacing-md);
+}
+
+/* 9. Utilities & Misc */
+#message-container { /* ID from HTML */
+  padding: var(--spacing-md);
+  margin: var(--spacing-md) auto;
+  max-width: 600px;
+  border-radius: var(--border-radius-md);
+  text-align: center;
+  font-weight: 500;
+  position: fixed; /* Fixed position for global messages */
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000; /* High z-index */
+  min-width: 300px;
+  box-shadow: var(--shadow-md);
+}
+#message-container:not(:empty) { /* Only display if it has content */
+    display: block; /* JS will set text, this makes it visible */
+}
+#message-container.success {
+  background-color: #d4edda; /* Light green */
+  color: #155724; /* Dark green */
+  border: 1px solid #c3e6cb;
+}
+#message-container.error {
+  background-color: #f8d7da; /* Light red */
+  color: #721c24; /* Dark red */
+  border: 1px solid #f5c6cb;
+}
+#message-container.info {
+  background-color: #d1ecf1; /* Light blue */
+  color: #0c5460; /* Dark blue */
+  border: 1px solid #bee5eb;
+}
+
+#qr-code-container { /* ID from HTML */
+  background-color: var(--color-background-card);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+  margin-top: var(--spacing-xl);
+  border: 1px solid var(--border-color);
+}
+#qr-code-container img {
+  max-width: 200px;
+  height: auto;
+  margin: var(--spacing-md) auto;
+  display: block;
+  border: 1px solid var(--border-color);
+  padding: var(--spacing-xs);
+}
+#qr-code-container h3 {
+    margin-bottom: var(--spacing-sm);
+}
+
+#ticket-sales-chart-container { /* ID from HTML */
+  background-color: var(--color-background-card);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+  margin-top: var(--spacing-xl);
+  border: 1px solid var(--border-color);
+}
+#ticket-sales-chart-container h3 {
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+}
+#ticketSalesChart { /* Canvas ID */
+    max-height: 400px; /* Prevent chart from becoming too tall */
+}
+
+
+/* 10. Responsive Design */
+@media (max-width: 992px) {
+  #movies-container,
+  #screenings-container {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  html { font-size: 15px; }
+
+  .tabs {
+    padding: 0 var(--spacing-md);
+    flex-direction: column;
+    align-items: stretch; /* Stretch items to full width */
+    height: auto; /* Auto height for stacked items */
+  }
+  .tab-button-group {
+    justify-content: flex-start; /* Align tabs to start */
+    width: 100%;
+    overflow-x: auto; /* Allow scrolling if too many tabs */
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: var(--spacing-sm); /* Space for scrollbar if needed */
+  }
+  .tab-button {
+    padding: var(--spacing-md) var(--spacing-sm); /* Adjust padding */
+    justify-content: center;
+    flex-grow: 1; /* Allow buttons to grow */
+  }
+  #logout-button {
+    margin-top: var(--spacing-sm);
+    width: 100%;
+    margin-left: 0; /* Reset margin */
+  }
+
+  .tab-content {
+    padding: var(--spacing-lg);
+  }
+
+  .filter-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-md);
+  }
+  .filter-group {
+    min-width: unset;
+  }
+  .filter-container button {
+    width: 100%;
+  }
+
+  #add-screening-form {
+    grid-template-columns: 1fr; /* Stack form elements */
+  }
+  #add-screening-form button[type="submit"] {
+    width: 100%;
+  }
+
+  .manager-screening-item {
+    flex-direction: column;
+    align-items: flex-start; /* Align items to start in column */
+  }
+  .manager-screening-poster {
+    width: 100px;
+    height: 150px;
+    margin-bottom: var(--spacing-sm);
+  }
+  .manager-screening-actions {
+    flex-direction: row; /* Keep actions in a row */
+    width: 100%; /* Full width for actions */
+    justify-content: space-between; /* Space out buttons */
+  }
+  .manager-screening-actions button {
+    flex-grow: 1; /* Make buttons share space */
+    margin: 0 var(--spacing-xs);
+  }
+  .manager-screening-actions button:first-child { margin-left: 0;}
+  .manager-screening-actions button:last-child { margin-right: 0;}
+
+
+  #movies-container,
+  #screenings-container {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+}
+
+@media (max-width: 576px) {
+  html { font-size: 14px; }
+  .tab-content { padding: var(--spacing-md); }
+  #login-form { padding: var(--spacing-lg); }
+  
+  .movie-info h2 { font-size: 1.05rem; }
+  .movie-info p { font-size: 0.8rem; }
+  .screening-details h4 { font-size: 1rem; }
+  .screening-details p { font-size: 0.85rem; }
+
+  #movies-container,
+  #screenings-container {
+    grid-template-columns: 1fr; /* Single column for all cards */
+  }
+
+  #message-container {
+    width: 90%;
+    top: 10px;
+  }
+}
+```
+
+**Key Changes and Considerations based on your HTML:**
+
+1.  **Initial `.container`:** The first `div.container` in your `body` wraps the login. I've removed its default padding assuming it's primarily for the login view, which itself has padding. If `#message-container` is meant to be globally visible *outside* the login flow and constrained, you might need to adjust its placement or the initial container's role.
+2.  **`#tabs-container` and `.tabs`:** Styles are set up for the tab bar (`.tabs`) to be centered and have a max-width, while `#tabs-container` itself will fill the screen height after login.
+3.  **`.tab-content` Padding:** Instead of `#tabs-container` having a bottom margin, each `.tab-content` div now has padding to ensure content isn't flush against edges.
+4.  **`#logout-button`:** Styled as a danger button and positioned within the `.tabs` flex container.
+5.  **Filter Containers:** Generic `.filter-container` and `.filter-group` styles are provided, matching your HTML structure in the "Movies" and "Screenings" tabs.
+6.  **Dynamic Content Containers:** `#movies-container`, `#screenings-container`, and `#manager-screenings-list` are styled as grids. The individual item styles (`.movie`, `.screening`, `.manager-screening-item`) are based on class names typically generated by your `app.js`.
+7.  **`#add-screening-form`:** Styled as a grid. The `#movie-title-suggestions` div is positioned absolutely relative to its parent form. You might need to fine-tune its `top` / `left` / `right` properties or its parent's positioning context if it doesn't align perfectly with the `movieTitle` input.
+8.  **`#message-container`:** Styled to be fixed at the top-center of the screen for global notifications. It's hidden by default unless it has content (you can remove `:not(:empty)` if your JS always manages its display style).
+9.  **Responsive Adjustments:** Media queries are included to reflow content for smaller screens, including stacking tab buttons and filter elements, and adjusting grid columns.
+
+**To make this work best:**
+
+*   Ensure your `app.js` correctly adds the classes like `.movie`, `.screening`, `.screening-poster`, `.screening-details`, `.manager-screening-item`, etc., when dynamically creating these elements.
+*   If you use Google Fonts (like Roboto), make sure to link them in your `index.html`'s `<head>`:
+    ````html
+    // filepath: c:\school\programeer_lessen\IOT-Apps\cinema\cinema-app\frontend\index.html
+    // ...existing code...
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Cinema App</title>
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
+      <link rel="stylesheet" href="style.css">
+      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    </head>
+    // ...existing code...
+    ````
+*   Test thoroughly across different browsers and screen sizes.
+
+This CSS provides a solid foundation. You can tweak the variables at the top or specific selectors to further customize the appearance.// filepath: c:\school\programeer_lessen\IOT-Apps\cinema\cinema-app\frontend\style.css
+/* Modern Cinema App Styling */
+
+/* 1. CSS Variables & Root Configuration */
+:root {
+  --font-primary: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --font-secondary: 'Roboto', sans-serif; /* Optional, for specific elements */
+
+  --color-primary: #007BFF; /* Vibrant Blue */
+  --color-primary-dark: #0056b3;
+  --color-primary-light: #66b3ff;
+
+  --color-secondary: #6c757d; /* Cool Gray */
+  --color-secondary-dark: #545b62;
+  --color-secondary-light: #adb5bd;
+
+  --color-accent: #17a2b8; /* Teal/Cyan Accent */
+  --color-accent-dark: #117a8b;
+
+  --color-success: #28a745; /* Green */
+  --color-danger: #dc3545;  /* Red */
+  --color-warning: #ffc107; /* Yellow */
+  --color-info: #17a2b8;   /* Teal (same as accent here) */
+
+  --color-background-body: #f8f9fa; /* Light Gray */
+  --color-background-card: #ffffff; /* White */
+  --color-background-header: #ffffff;
+  --color-background-footer: #343a40; /* Dark footer example */
+
+  --color-text-primary: #212529;   /* Dark Gray for main text */
+  --color-text-secondary: #495057; /* Medium Gray for less emphasis */
+  --color-text-light: #ffffff;
+  --color-text-muted: #6c757d;    /* Muted gray */
+  --color-text-link: var(--color-primary);
+
+  --border-color: #dee2e6;
+  --border-radius-sm: 0.2rem;
+  --border-radius-md: 0.375rem;
+  --border-radius-lg: 0.5rem;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-xxl: 3rem;
+
+  --transition-fast: all 0.15s ease-in-out;
+  --transition-normal: all 0.3s ease-in-out;
+}
+
+/* 2. Reset & Base Styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px; /* Base font size */
+  scroll-behavior: smooth;
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-primary);
+  line-height: 1.6;
+  background-color: var(--color-background-body);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 3. Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-secondary, var(--font-primary));
+  font-weight: 600;
+  line-height: 1.3;
+  margin-bottom: var(--spacing-md);
+  color: var(--color-text-primary);
+}
+
+h1 { font-size: 2.25rem; } /* ~36px */
+h2 { font-size: 1.875rem; } /* ~30px */
+h3 { font-size: 1.5rem; }   /* ~24px */
+h4 { font-size: 1.25rem; }  /* ~20px */
+
+p {
+  margin-bottom: var(--spacing-md);
+  color: var(--color-text-secondary);
+}
+
+a {
+  color: var(--color-text-link);
+  text-decoration: none;
+  transition: var(--transition-fast);
+}
+a:hover {
+  color: var(--color-primary-dark);
+  text-decoration: underline;
+}
+
+small {
+  font-size: 0.875em;
+}
+
+/* 4. Layout Components */
+.container { /* This is the initial wrapper in body */
+  width: 100%;
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0; /* Remove padding if it's just for login */
+}
+
+#login-section-wrapper .container { /* If you re-introduce a specific wrapper for login */
+    padding: var(--spacing-xl);
+}
+
+/* Login Section */
+#login-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 90vh; /* Make it take most of the viewport height */
+  padding: var(--spacing-xl); /* Padding for the login view itself */
+  background-color: var(--color-background-body); /* Ensure it has a background */
+}
+
+#login-form { /* The div wrapping the form */
+  background-color: var(--color-background-card);
+  padding: var(--spacing-xl);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 400px;
+}
+#login-form h2 {
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+  color: var(--color-primary);
+}
+
+/* Tabs */
+#tabs-container {
+  background-color: var(--color-background-header);
+  box-shadow: var(--shadow-sm);
+  /* margin-bottom: var(--spacing-xl); Removed, tab-content will have padding */
+  width: 100%;
+  flex-grow: 1; /* Allow tabs container to fill remaining space */
+  display: flex;
+  flex-direction: column;
+}
+
+.tabs { /* This div contains tab buttons and logout */
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+  max-width: 1280px; /* Max width for the tab bar itself */
+  width: 100%;
+  margin: 0 auto; /* Center the tab bar */
+  padding: 0 var(--spacing-lg);
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--color-background-header); /* Ensure background */
+  height: 60px; /* Fixed height for tab bar */
 }
 
-.manager-screening-item p {
-  margin: 0.5rem 0;
-  font-size: 0.95rem;
-  color: #444;
-  flex-grow: 1; /* Allow text to take available space */
-}
-
-.manager-screening-item div { /* Container for buttons */
+.tab-button-group {
   display: flex;
-  gap: 0.5rem; /* Space between buttons */
-  margin-top: 0.5rem; /* Add some space if buttons wrap */
+  height: 100%;
 }
 
-.manager-screening-item button {
-  padding: 0.5rem 1rem;
+.tab-button {
+  font-family: var(--font-secondary, var(--font-primary));
+  font-weight: 500;
+  padding: 0 var(--spacing-lg); /* Adjust padding for vertical alignment */
+  color: var(--color-text-secondary);
+  background-color: transparent;
   border: none;
-  border-radius: 5px;
+  border-bottom: 3px solid transparent;
   cursor: pointer;
+  transition: var(--transition-normal);
+  font-size: 1rem;
+  display: flex;
+  align-items: center; /* Vertically center text */
+  height: 100%;
+}
+.tab-button:hover {
+  color: var(--color-primary);
+}
+.tab-button.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+/* Tab Content */
+.tab-content {
+  padding: var(--spacing-xl); /* Add padding inside each tab content area */
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto; /* Center content */
+  flex-grow: 1;
+  overflow-y: auto; /* Allow scrolling within tab content if it overflows */
+}
+
+.tab-content > h1,
+.tab-content > h2 {
+  font-size: 2rem;
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--color-primary-dark);
+}
+
+/* 5. Forms (General & Specific) */
+label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: var(--spacing-sm);
+  color: var(--color-text-secondary);
   font-size: 0.9rem;
-  font-weight: bold;
-  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-.manager-screening-item button:hover {
-  transform: translateY(-2px);
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+input[type="date"],
+input[type="datetime-local"],
+select {
+  display: block;
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+  background-color: var(--color-background-card);
+  background-clip: padding-box;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  margin-bottom: var(--spacing-md);
+}
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+input[type="datetime-local"]:focus,
+select:focus {
+  border-color: var(--color-primary-light);
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(var(--color-primary), 0.25); /* Check variable usage */
+}
+input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
 }
 
-.edit-screening {
-  background-color: #007bff; /* Blue for edit */
-  color: #fff;
+/* Filter Containers */
+.filter-container {
+  background-color: var(--color-background-card);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+  align-items: flex-end;
+}
+.filter-group {
+  flex: 1 1 200px; /* Grow, shrink, basis */
+}
+.filter-group label {
+  font-size: 0.85rem;
+}
+.filter-container input,
+.filter-container select {
+  margin-bottom: 0;
+}
+.filter-container button {
+  height: fit-content; /* Align button with inputs */
+  margin-bottom: 0; /* Overrides default button margin if any */
 }
 
-.edit-screening:hover {
-  background-color: #0056b3;
+/* Add Screening Form */
+#add-screening-form {
+  background-color: var(--color-background-card);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: var(--spacing-xl);
+  box-shadow: var(--shadow-md);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-md) var(--spacing-lg);
+  align-items: end; /* Align items to bottom */
+  position: relative; /* For suggestion list positioning */
+}
+#add-screening-form label {
+  margin-bottom: var(--spacing-xs);
+}
+#add-screening-form input {
+  margin-bottom: 0;
+}
+#add-screening-form button[type="submit"] {
+  grid-column: 1 / -1; /* Span full width */
+  margin-top: var(--spacing-md);
 }
 
-.delete-screening {
-  background-color: #dc3545; /* Red for delete */
-  color: #fff;
+/* Movie Title Suggestions for Add Screening Form */
+#movie-title-suggestions {
+  position: absolute;
+  top: calc(100% - var(--spacing-md)); /* Position below the movieTitle input */
+  left: 0;
+  right: 0;
+  background-color: #fff;
+  border: 1px solid var(--border-color);
+  border-top: none;
+  border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 10;
+  /* Find the correct input to position relative to. Assuming movieTitle input is the first child or has a specific class */
+}
+/* If movieTitleInput is the first input in a grid cell: */
+#add-screening-form div:has(#movieTitle) + #movie-title-suggestions {
+    /* More specific positioning might be needed depending on exact grid layout */
 }
 
-.delete-screening:hover {
-  background-color: #c82333;
+.suggestions-list div { /* Class from HTML: .suggestions-list */
+  padding: var(--spacing-sm) var(--spacing-md);
+  cursor: pointer;
 }
+.suggestions-list div:hover {
+  background-color: var(--color-primary-light);
+  color: var(--color-text-light);
+}
+
+
+/* 6. Buttons */
+button, .button { /* General button styling */
+  display: inline-block;
+  font-family: var(--font-primary);
+  font-weight: 500;
+  text-align: center;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid transparent;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: 1rem;
+  line-height: 1.5;
+  border-radius: var(--border-radius-md);
+  transition: var(--transition-normal);
+  text-transform: capitalize;
+}
+
+/* Default (Primary) Button */
+button,
+.button,
+button[type="submit"], /* Default submit buttons */
+#apply-screening-filter /* Specific ID if it's a primary action */
+ {
+  color: var(--color-text-light);
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+button:hover,
+.button:hover,
+button[type="submit"]:hover,
+#apply-screening-filter:hover {
+  background-color: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+  color: var(--color-text-light); /* Ensure text color remains light */
+}
+button:focus,
+.button:focus,
+button[type="submit"]:focus,
+#apply-screening-filter:focus {
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.5); /* Direct color for primary focus */
+}
+
+/* Secondary Button */
+.btn-secondary,
+#clear-screening-filter /* Specific ID if it's a secondary action */
+ {
+  color: var(--color-text-light);
+  background-color: var(--color-secondary);
+  border-color: var(--color-secondary);
+}
+.btn-secondary:hover,
+#clear-screening-filter:hover {
+  background-color: var(--color-secondary-dark);
+  border-color: var(--color-secondary-dark);
+}
+.btn-secondary:focus,
+#clear-screening-filter:focus {
+  box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.5); /* Direct color for secondary focus */
+}
+
+
+/* Danger Button (Logout, Delete) */
+.btn-danger {
+  color: var(--color-text-light);
+  background-color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+.btn-danger:hover {
+  background-color: #c82333; /* Darken(var(--color-danger), 10%) */
+  border-color: #bd2130; /* Darken(var(--color-danger), 12%) */
+}
+.btn-danger:focus {
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.5); /* Direct color for danger focus */
+}
+
+/* Success Button */
+.btn-success {
+  color: var(--color-text-light);
+  background-color: var(--color-success);
+  border-color: var(--color-success);
+}
+.btn-success:hover {
+  background-color: #218838; /* Darken */
+  border-color: #1e7e34; /* Darken */
+}
+.btn-success:focus {
+   box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.5);
+}
+
+
+#logout-button {
+  /* Uses .btn-danger, specific adjustments if needed */
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: 0.9rem;
+  margin-left: auto; /* Pushes to the right in flex container .tabs */
+}
+
+/* 7. Cards & Grids (Movies, Screenings) */
+/* These containers are inside .tab-content, which already has padding and max-width */
+#movies-container,
+#screenings-container,
+#manager-screenings-list { /* These are the grid containers */
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); /* Slightly smaller min for more cards */
+  gap: var(--spacing-lg);
+  padding-top: var(--spacing-md); /* Add some space above the grid */
+}
+
+/* Specific grid for manager list items if they need different layout */
+#manager-screenings-list {
+  grid-template-columns: 1fr; /* Manager items are full width list items */
+}
+
+/* Individual Movie Card (dynamically created with class="movie") */
+.movie {
+  background-color: var(--color-background-card);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: var(--transition-normal);
+}
+.movie:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+}
+.movie img {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  display: block;
+  background-color: #eee; /* Placeholder */
+}
+.movie-info {
+  padding: var(--spacing-md);
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+.movie-info h2 { /* Movie title in card */
+  font-size: 1.15rem; /* Slightly smaller for card */
+  margin-bottom: var(--spacing-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.movie-info p {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+.movie-info p.release-date {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin-top: auto; /* Pushes to bottom */
+  padding-top: var(--spacing-sm);
+}
+.movie .edit-movie { /* Button inside movie card */
+  margin: 0 var(--spacing-md) var(--spacing-md) var(--spacing-md); /* Margin around button */
+  align-self: flex-start; /* Align to start if needed, or stretch */
+}
+
+/* Individual Screening Card (dynamically created with class="screening") */
+.screening { /* Assuming this class is used by JS for user view */
+  background-color: var(--color-background-card);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column; /* Stack poster and details */
+  transition: var(--transition-normal);
+}
+.screening:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+}
+.screening-poster { /* Class from JS */
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  background-color: #eee; /* Placeholder */
+}
+.screening-details { /* Class from JS */
+  padding: var(--spacing-md);
+  flex-grow: 1;
+}
+.screening-details h4 {
+  font-size: 1.1rem;
+  margin-bottom: var(--spacing-sm);
+}
+.screening-details p {
+  font-size: 0.9rem;
+  margin-bottom: var(--spacing-sm);
+}
+.screening .reserve-ticket {
+  margin-top: var(--spacing-sm);
+  width: 100%; /* Make button full width of its container */
+}
+
+
+/* Manager Screening List Items (dynamically created with class="manager-screening-item") */
+.manager-screening-item {
+  background-color: var(--color-background-card);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  display: flex; /* Use flex for horizontal layout */
+  align-items: center;
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  gap: var(--spacing-md);
+  transition: var(--transition-normal);
+}
+.manager-screening-item:hover {
+    box-shadow: var(--shadow-md);
+}
+.manager-screening-poster { /* Class from JS */
+  width: 70px; /* Fixed width for poster */
+  height: 105px; /* Maintain aspect ratio */
+  object-fit: cover;
+  border-radius: var(--border-radius-sm);
+  flex-shrink: 0; /* Prevent poster from shrinking */
+}
+.manager-screening-details { /* Class from JS */
+  flex-grow: 1; /* Allow details to take remaining space */
+}
+.manager-screening-details p {
+  margin: 0 0 var(--spacing-xs) 0;
+  font-size: 0.9rem;
+}
+.manager-screening-details p strong {
+  font-weight: 600; /* Bolder title */
+  color: var(--color-text-primary);
+}
+.manager-screening-actions { /* Class from JS */
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-shrink: 0; /* Prevent buttons from shrinking */
+}
+.manager-screening-actions button {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: 0.85rem;
+}
+
+/* 8. Popover */
+#edit-screening-popover {
+  background-color: var(--color-background-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-lg);
+  width: clamp(320px, 90vw, 450px); /* Responsive width */
+  z-index: 1000;
+  margin: auto; /* Helps center if used as modal */
+}
+#edit-screening-popover::backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(3px);
+}
+#edit-screening-popover-form h3 {
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+  color: var(--color-primary);
+}
+.popover-actions { /* Div wrapping buttons in popover */
+  display: flex;
+  justify-content: flex-end; /* Align buttons to the right */
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+  border-top: 1px solid var(--border-color);
+  padding-top: var(--spacing-md);
+}
+
+/* 9. Utilities & Misc */
+#message-container { /* ID from HTML */
+  padding: var(--spacing-md);
+  margin: var(--spacing-md) auto;
+  max-width: 600px;
+  border-radius: var(--border-radius-md);
+  text-align: center;
+  font-weight: 500;
+  position: fixed; /* Fixed position for global messages */
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000; /* High z-index */
+  min-width: 300px;
+  box-shadow: var(--shadow-md);
+}
+#message-container:not(:empty) { /* Only display if it has content */
+    display: block; /* JS will set text, this makes it visible */
+}
+#message-container.success {
+  background-color: #d4edda; /* Light green */
+  color: #155724; /* Dark green */
+  border: 1px solid #c3e6cb;
+}
+#message-container.error {
+  background-color: #f8d7da; /* Light red */
+  color: #721c24; /* Dark red */
+  border: 1px solid #f5c6cb;
+}
+#message-container.info {
+  background-color: #d1ecf1; /* Light blue */
+  color: #0c5460; /* Dark blue */
+  border: 1px solid #bee5eb;
+}
+
+#qr-code-container { /* ID from HTML */
+  background-color: var(--color-background-card);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+  margin-top: var(--spacing-xl);
+  border: 1px solid var(--border-color);
+}
+#qr-code-container img {
+  max-width: 200px;
+  height: auto;
+  margin: var(--spacing-md) auto;
+  display: block;
+  border: 1px solid var(--border-color);
+  padding: var(--spacing-xs);
+}
+#qr-code-container h3 {
+    margin-bottom: var(--spacing-sm);
+}
+
+#ticket-sales-chart-container { /* ID from HTML */
+  background-color: var(--color-background-card);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+  margin-top: var(--spacing-xl);
+  border: 1px solid var(--border-color);
+}
+#ticket-sales-chart-container h3 {
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+}
+#ticketSalesChart { /* Canvas ID */
+    max-height: 400px; /* Prevent chart from becoming too tall */
+}
+
+
+/* 10. Responsive Design */
+@media (max-width: 992px) {
+  #movies-container,
+  #screenings-container {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  html { font-size: 15px; }
+
+  .tabs {
+    padding: 0 var(--spacing-md);
+    flex-direction: column;
+    align-items: stretch; /* Stretch items to full width */
+    height: auto; /* Auto height for stacked items */
+  }
+  .tab-button-group {
+    justify-content: flex-start; /* Align tabs to start */
+    width: 100%;
+    overflow-x: auto; /* Allow scrolling if too many tabs */
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: var(--spacing-sm); /* Space for scrollbar if needed */
+  }
+  .tab-button {
+    padding: var(--spacing-md) var(--spacing-sm); /* Adjust padding */
+    justify-content: center;
+    flex-grow: 1; /* Allow buttons to grow */
+  }
+  #logout-button {
+    margin-top: var(--spacing-sm);
+    width: 100%;
+    margin-left: 0; /* Reset margin */
+  }
+
+  .tab-content {
+    padding: var(--spacing-lg);
+  }
+
+  .filter-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-md);
+  }
+  .filter-group {
+    min-width: unset;
+  }
+  .filter-container button {
+    width: 100%;
+  }
+
+  #add-screening-form {
+    grid-template-columns: 1fr; /* Stack form elements */
+  }
+  #add-screening-form button[type="submit"] {
+    width: 100%;
+  }
+
+  .manager-screening-item {
+    flex-direction: column;
+    align-items: flex-start; /* Align items to start in column */
+  }
+  .manager-screening-poster {
+    width: 100px;
+    height: 150px;
+    margin-bottom: var(--spacing-sm);
+  }
+  .manager-screening-actions {
+    flex-direction: row; /* Keep actions in a row */
+    width: 100%; /* Full width for actions */
+    justify-content: space-between; /* Space out buttons */
+  }
+  .manager-screening-actions button {
+    flex-grow: 1; /* Make buttons share space */
+    margin: 0 var(--spacing-xs);
+  }
+  .manager-screening-actions button:first-child { margin-left: 0;}
+  .manager-screening-actions button:last-child { margin-right: 0;}
+
+
+  #movies-container,
+  #screenings-container {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+}
+
+@media (max-width: 576px) {
+  html { font-size: 14px; }
+  .tab-content { padding: var(--spacing-md); }
+  #login-form { padding: var(--spacing-lg); }
+  
+  .movie-info h2 { font-size: 1.05rem; }
+  .movie-info p { font-size: 0.8rem; }
+  .screening-details h4 { font-size: 1rem; }
+  .screening-details p { font-size: 0.85rem; }
+
+  #movies-container,
+  #screenings-container {
+    grid-template-columns: 1fr; /* Single column for all cards */
+  }
+
+  #message-container {
+    width: 90%;
+    top: 10px;
+  }
+}
+```
+
+**Key Changes and Considerations based on your HTML:**
+
+1.  **Initial `.container`:** The first `div.container` in your `body` wraps the login. I've removed its default padding assuming it's primarily for the login view, which itself has padding. If `#message-container` is meant to be globally visible *outside* the login flow and constrained, you might need to adjust its placement or the initial container's role.
+2.  **`#tabs-container` and `.tabs`:** Styles are set up for the tab bar (`.tabs`) to be centered and have a max-width, while `#tabs-container` itself will fill the screen height after login.
+3.  **`.tab-content` Padding:** Instead of `#tabs-container` having a bottom margin, each `.tab-content` div now has padding to ensure content isn't flush against edges.
+4.  **`#logout-button`:** Styled as a danger button and positioned within the `.tabs` flex container.
+5.  **Filter Containers:** Generic `.filter-container` and `.filter-group` styles are provided, matching your HTML structure in the "Movies" and "Screenings" tabs.
+6.  **Dynamic Content Containers:** `#movies-container`, `#screenings-container`, and `#manager-screenings-list` are styled as grids. The individual item styles (`.movie`, `.screening`, `.manager-screening-item`) are based on class names typically generated by your `app.js`.
+7.  **`#add-screening-form`:** Styled as a grid. The `#movie-title-suggestions` div is positioned absolutely relative to its parent form. You might need to fine-tune its `top` / `left` / `right` properties or its parent's positioning context if it doesn't align perfectly with the `movieTitle` input.
+8.  **`#message-container`:** Styled to be fixed at the top-center of the screen for global notifications. It's hidden by default unless it has content (you can remove `:not(:empty)` if your JS always manages its display style).
+9.  **Responsive Adjustments:** Media queries are included to reflow content for smaller screens, including stacking tab buttons and filter elements, and adjusting grid columns.
+
+**To make this work best:**
+
+*   Ensure your `app.js` correctly adds the classes like `.movie`, `.screening`, `.screening-poster`, `.screening-details`, `.manager-screening-item`, etc., when dynamically creating these elements.
+*   If you use Google Fonts (like Roboto), make sure to link them in your `index.html`'s `<head>`:
+    ````html
+    // filepath: c:\school\programeer_lessen\IOT-Apps\cinema\cinema-app\frontend\index.html
+    // ...existing code...
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Cinema App</title>
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
+      <link rel="stylesheet" href="style.css">
+      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    </head>
+    // ...existing code...
+    ````
+*   Test thoroughly across different browsers and screen sizes.
+
+This CSS provides a solid foundation. You can tweak the variables at the top or specific selectors to further customize the appearance.

@@ -131,15 +131,18 @@ const swaggerOptions = {
           properties: {
             id: { type: 'integer', example: 1 },
             movieId: { type: 'integer', example: 653346 },
+            movieTitle: { type: 'string', example: 'Kingdom of the Planet of the Apes', description: 'Title of the movie for this screening' },
+            moviePosterPath: { type: 'string', example: '/gKkl37BQuKTanygYQG1pyYgLVgf.jpg', description: 'Poster path of the movie' },
             date: { type: 'string', format: 'date-time', example: '2025-05-20T19:00:00.000Z' },
+            initialTicketsAvailable: { type: 'integer', example: 100, description: 'Initial number of tickets when screening was created/last updated' },
             ticketsAvailable: { type: 'integer', example: 100 },
           },
         },
         ScreeningInput: {
           type: 'object',
-          required: ['movieId', 'date', 'ticketsAvailable'],
+          required: ['movieTitle', 'date', 'ticketsAvailable'],
           properties: {
-            movieId: { type: 'integer', example: 653346 },
+            movieTitle: { type: 'string', example: "Kingdom of the Planet of the Apes" },
             date: { type: 'string', format: 'date-time', example: '2025-05-20T19:00:00Z' },
             ticketsAvailable: { type: 'integer', example: 100 },
           },
@@ -155,7 +158,13 @@ const swaggerOptions = {
             type: 'object',
             properties: {
                 message: { type: 'string', example: 'Ticket reserved successfully' },
-                screening: { $ref: '#/components/schemas/Screening' }
+                screening: { $ref: '#/components/schemas/Screening' },
+                qrCodeDataUrl: {
+                    type: 'string',
+                    format: 'url',
+                    description: 'Data URL of the generated QR code for the ticket.',
+                    example: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA....'
+                }
             }
         },
         Error: {

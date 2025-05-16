@@ -1,7 +1,9 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const QRCode = require('qrcode'); // Import QRCode library
 const { verifyToken, verifyRole } = require('../middleware/authMiddleware');
+const { searchMovieByTitle, searchMoviesForSuggestions } = require('../utils/tmdb'); // Add searchMoviesForSuggestions
 
 const screeningsFilePath = path.resolve(__dirname, '../models/screenings.json');
 const reservationsFilePath = path.join(__dirname, '../models/reservations.json');
@@ -67,10 +69,18 @@ module.exports = (broadcastMessage) => {
    * @swagger
    * /api/screenings:
    *   get:
-   *     summary: Retrieve all screenings
+   *     summary: Retrieve all screenings, optionally filtered by date
    *     tags: [Screenings]
    *     security:
    *       - bearerAuth: []
+   *     parameters:
+   *       - in: query
+   *         name: date
+   *         schema:
+   *           type: string
+   *           format: date
+   *         required: false
+   *         description: Filter screenings by a specific date (YYYY-MM-DD)
    *     responses:
    *       200:
    *         description: A list of screenings
@@ -86,7 +96,15 @@ module.exports = (broadcastMessage) => {
    *         description: Server error
    */
   router.get('/', verifyToken, (req, res) => {
-    const screenings = loadScreeningsData();
+    let screenings = loadScreeningsData();
+    const filterDate = req.query.date; // e.g., "2025-05-17"
+
+    if (filterDate) {
+      screenings = screenings.filter(screening => {
+        // Compare only the date part of the screening.date (ISO string)
+        return screening.date.startsWith(filterDate);
+      });
+    }
     res.json(screenings);
   });
 
@@ -94,7 +112,7 @@ module.exports = (broadcastMessage) => {
    * @swagger
    * /api/screenings:
    *   post:
-   *     summary: Create a new screening (Manager only)
+   *     summary: Create a new screening using movie title (Manager only)
    *     tags: [Screenings]
    *     security:
    *       - bearerAuth: []
@@ -103,7 +121,22 @@ module.exports = (broadcastMessage) => {
    *       content:
    *         application/json:
    *           schema:
-   *             $ref: '#/components/schemas/ScreeningInput'
+   *             type: object
+   *             required:
+   *               - movieTitle
+   *               - date
+   *               - ticketsAvailable
+   *             properties:
+   *               movieTitle:
+   *                 type: string
+   *                 example: "Kingdom of the Planet of the Apes"
+   *               date:
+   *                 type: string
+   *                 format: date-time
+   *                 example: "2025-05-20T19:00:00Z"
+   *               ticketsAvailable:
+   *                 type: integer
+   *                 example: 100
    *     responses:
    *       201:
    *         description: Screening created successfully
@@ -112,35 +145,57 @@ module.exports = (broadcastMessage) => {
    *             schema:
    *               $ref: '#/components/schemas/Screening'
    *       400:
-   *         description: All fields are required
+   *         description: All fields are required, invalid ticketsAvailable value, or movie title not found/ambiguous
    *       401:
    *         description: Unauthorized
    *       403:
    *         description: Forbidden (user is not a manager)
    *       500:
-   *         description: Server error
+   *         description: Server error or error searching for movie
    */
-  router.post('/', verifyToken, verifyRole('manager'), (req, res) => {
-    const { movieId, date, ticketsAvailable } = req.body;
+  router.post('/', verifyToken, verifyRole('manager'), async (req, res) => {
+    const { movieTitle, date, ticketsAvailable } = req.body;
 
-    if (!movieId || !date || ticketsAvailable == null) {
-      return res.status(400).json({ error: 'All fields are required' });
+    if (!movieTitle || !date || ticketsAvailable == null) {
+      return res.status(400).json({ error: 'Movie title, date, and tickets available are required' });
     }
+
+    let foundMovie;
+    try {
+      foundMovie = await searchMovieByTitle(movieTitle);
+      if (!foundMovie || !foundMovie.id) {
+        return res.status(400).json({ error: `Movie with title "${movieTitle}" not found or TMDB search failed.` });
+      }
+    } catch (tmdbError) {
+      console.error("TMDB search error:", tmdbError);
+      return res.status(500).json({ error: 'Failed to search for movie on TMDB.' });
+    }
+    
+    const movieId = foundMovie.id;
 
     const screenings = loadScreeningsData();
     const newId = screenings.length > 0 ? Math.max(...screenings.map(s => s.id)) + 1 : 1;
+    
+    const initialTickets = parseInt(ticketsAvailable);
+    if (isNaN(initialTickets) || initialTickets < 0) {
+        return res.status(400).json({ error: 'Invalid ticketsAvailable value' });
+    }
+
     const newScreening = {
       id: newId,
-      movieId: parseInt(movieId),
+      movieId: movieId,
+      movieTitle: foundMovie.title, // Sla de titel van de film op
+      moviePosterPath: foundMovie.poster_path, // Sla het poster pad op
       date,
-      ticketsAvailable: parseInt(ticketsAvailable),
+      initialTicketsAvailable: initialTickets,
+      ticketsAvailable: initialTickets,
     };
 
     screenings.push(newScreening);
     saveScreeningsData(screenings);
 
     broadcastMessage({ type: 'screenings_updated', payload: loadScreeningsData() });
-    res.status(201).json(newScreening);
+    res.status(201).json(newScreening); 
   });
 
   /**
@@ -182,9 +237,9 @@ module.exports = (broadcastMessage) => {
    *       500:
    *         description: Server error
    */
-  router.put('/:id', verifyToken, verifyRole('manager'), (req, res) => {
+  router.put('/:id', verifyToken, verifyRole('manager'), async (req, res) => {
     const { id } = req.params;
-    const { movieId, date, ticketsAvailable } = req.body;
+    const { movieId: inputMovieId, movieTitle: inputMovieTitle, date, ticketsAvailable } = req.body;
 
     let screenings = loadScreeningsData();
     const screeningIndex = screenings.findIndex((s) => s.id === parseInt(id));
@@ -192,17 +247,40 @@ module.exports = (broadcastMessage) => {
     if (screeningIndex === -1) {
       return res.status(404).json({ error: 'Screening not found' });
     }
+    
+    const updatedScreening = { ...screenings[screeningIndex] };
 
-    if (movieId == null || !date || ticketsAvailable == null) {
-      return res.status(400).json({ error: 'All fields (movieId, date, ticketsAvailable) are required for update' });
+    if (inputMovieTitle) { // Als titel wordt gegeven, zoek ID en details op
+        try {
+            const foundMovie = await searchMovieByTitle(inputMovieTitle);
+            if (foundMovie && foundMovie.id) {
+                updatedScreening.movieId = foundMovie.id;
+                updatedScreening.movieTitle = foundMovie.title; 
+                updatedScreening.moviePosterPath = foundMovie.poster_path;
+            } else {
+                console.warn(`Movie title "${inputMovieTitle}" not found for update, keeping old movie details if any.`);
+            }
+        } catch (tmdbError) {
+            console.error("TMDB search error during update:", tmdbError);
+        }
+    } else if (inputMovieId !== undefined) { // Als ID direct wordt gegeven
+        if (updatedScreening.movieId !== parseInt(inputMovieId)) {
+            updatedScreening.movieId = parseInt(inputMovieId);
+        }
     }
 
-    screenings[screeningIndex] = { 
-        id: parseInt(id), 
-        movieId: parseInt(movieId),
-        date, 
-        ticketsAvailable: parseInt(ticketsAvailable)
-    };
+    if (date !== undefined) updatedScreening.date = date;
+    
+    if (ticketsAvailable !== undefined) {
+      const newInitialTickets = parseInt(ticketsAvailable);
+      if (isNaN(newInitialTickets) || newInitialTickets < 0) {
+        return res.status(400).json({ error: 'Invalid ticketsAvailable value for update' });
+      }
+      updatedScreening.initialTicketsAvailable = newInitialTickets;
+      updatedScreening.ticketsAvailable = newInitialTickets;
+    }
+
+    screenings[screeningIndex] = updatedScreening;
     saveScreeningsData(screenings);
 
     broadcastMessage({ type: 'screenings_updated', payload: loadScreeningsData() });
@@ -254,9 +332,69 @@ module.exports = (broadcastMessage) => {
 
   /**
    * @swagger
+   * /api/movies/suggestions:
+   *   get:
+   *     summary: Get movie title suggestions based on a query
+   *     tags: [Movies, Screenings]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: query
+   *         name: query
+   *         schema:
+   *           type: string
+   *         required: true
+   *         description: The search term for movie titles
+   *     responses:
+   *       200:
+   *         description: A list of movie suggestions
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 type: object
+   *                 properties:
+   *                   id:
+   *                     type: integer
+   *                   title:
+   *                     type: string
+   *                   release_date:
+   *                     type: string
+   *       400:
+   *         description: Query parameter is required
+   *       401:
+   *         description: Unauthorized
+   */
+  router.get('/movies/suggestions', verifyToken, async (req, res) => {
+    const { query } = req.query;
+    if (!query) {
+      return res.status(400).json({ error: 'Query parameter is required' });
+    }
+
+    try {
+      const movieResults = await searchMoviesForSuggestions(query);
+      // Map to a simpler format and limit the number of suggestions
+      const suggestions = movieResults
+        .map(movie => ({
+          id: movie.id,
+          title: movie.title,
+          release_date: movie.release_date 
+        }))
+        .slice(0, 7); // Return up to 7 suggestions
+
+      res.json(suggestions);
+    } catch (error) {
+      console.error('Error fetching movie suggestions:', error);
+      res.status(500).json({ error: 'Failed to fetch movie suggestions' });
+    }
+  });
+
+  /**
+   * @swagger
    * /api/screenings/reserve:
    *   post:
-   *     summary: Reserve a ticket for a screening
+   *     summary: Reserve a ticket for a screening and get a QR code
    *     tags: [Screenings]
    *     security:
    *       - bearerAuth: []
@@ -268,11 +406,15 @@ module.exports = (broadcastMessage) => {
    *             $ref: '#/components/schemas/ReservationInput'
    *     responses:
    *       200:
-   *         description: Ticket reserved successfully
+   *         description: Ticket reserved successfully, includes QR code
    *         content:
    *           application/json:
    *             schema:
-   *               $ref: '#/components/schemas/ReservationConfirmation'
+   *               type: object
+   *               properties:
+   *                 message: { type: 'string', example: 'Ticket reserved successfully' }
+   *                 screening: { $ref: '#/components/schemas/Screening' }
+   *                 qrCodeDataUrl: { type: 'string', format: 'url', example: 'data:image/png;base64,...' }
    *       400:
    *         description: Invalid input (e.g., screeningId missing, no tickets available, already reserved)
    *       401:
@@ -282,9 +424,10 @@ module.exports = (broadcastMessage) => {
    *       500:
    *         description: Server error
    */
-  router.post('/reserve', verifyToken, (req, res) => {
+  router.post('/reserve', verifyToken, async (req, res) => {
     const { screeningId } = req.body;
     const userId = req.user.id;
+    const username = req.user.username; // Get username from token
 
     if (screeningId == null) {
       return res.status(400).json({ message: "Screening ID is required" });
@@ -311,7 +454,7 @@ module.exports = (broadcastMessage) => {
     }
 
     if (screeningToBook.ticketsAvailable > 0) {
-      screenings[screeningIndex].ticketsAvailable--;
+      screenings[screeningIndex].ticketsAvailable--; // Only this is adjusted
       saveScreeningsData(screenings);
 
       if (!reservations[userId]) {
@@ -320,8 +463,31 @@ module.exports = (broadcastMessage) => {
       reservations[userId].push(parseInt(screeningId));
       saveReservationsData(reservations);
 
+      // Generate QR Code
+      const reservationData = {
+        userId: userId,
+        username: username,
+        screeningId: screeningToBook.id,
+        movieId: screeningToBook.movieId,
+        movieTitle: screeningToBook.movieTitle || 'N/A', // Gebruik opgeslagen titel
+        moviePosterPath: screeningToBook.moviePosterPath || null, // Gebruik opgeslagen poster
+        screeningDate: screeningToBook.date,
+        reservedAt: new Date().toISOString() // Add a timestamp
+      };
+      const qrDataString = JSON.stringify(reservationData);
+      let qrCodeDataUrl = '';
+      try {
+        qrCodeDataUrl = await QRCode.toDataURL(qrDataString);
+      } catch (err) {
+        console.error('Failed to generate QR code', err);
+      }
+
       broadcastMessage({ type: 'screenings_updated', payload: loadScreeningsData() });
-      res.status(200).json({ message: "Ticket reserved successfully", screening: screenings[screeningIndex] });
+      res.status(200).json({
+        message: "Ticket reserved successfully",
+        screening: screenings[screeningIndex],
+        qrCodeDataUrl: qrCodeDataUrl // Send QR code data URL to client
+      });
     } else {
       res.status(400).json({ message: "No tickets available for this screening" });
     }
