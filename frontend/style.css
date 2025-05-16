@@ -1,0 +1,384 @@
+/* General Styles */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f9;
+  color: #333;
+}
+
+h1 {
+  text-align: center;
+  background-color: #333;
+  color: #fff;
+  padding: 1rem;
+  margin: 0;
+}
+
+h2 {
+  color: #444;
+  margin-bottom: 1rem;
+}
+
+/* Movies Container */
+#movies-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.movie {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  width: 200px;
+  text-align: center;
+}
+
+.movie img {
+  max-width: 100%;
+  border-radius: 8px;
+}
+
+.movie h2 {
+  font-size: 1.2rem;
+  margin: 0.5rem 0;
+}
+
+.movie p {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* Login Form */
+#login-form {
+  max-width: 400px;
+  margin: 2rem auto;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+}
+
+#login-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+#login-form input {
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+#login-form button {
+  width: 100%;
+  padding: 0.7rem;
+  background-color: #333;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+#login-form button:hover {
+  background-color: #555;
+}
+
+/* Logout Button */
+#logout-button {
+  display: block;
+  margin: 1rem auto;
+  padding: 0.7rem 1.5rem;
+  background-color: #d9534f;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+#logout-button:hover {
+  background-color: #c9302c;
+}
+
+/* Manager Dashboard */
+#manager-content {
+  max-width: 70vw; /* Reduced width */
+  margin: 2rem auto;
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem; /* Reduced padding */
+}
+
+#manager-content h2 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Form Styling */
+#manager-content form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#manager-content label {
+  flex: 1 1 100%;
+  font-weight: bold;
+  color: #555;
+  margin-bottom: 0.5rem;
+}
+
+#manager-content input {
+  flex: 1 1 calc(33.33% - 1rem);
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+#manager-content button {
+  flex: 1 1 100%;
+  padding: 0.8rem;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+#manager-content button:hover {
+  background-color: #0056b3;
+}
+
+/* Add Screening Form */
+#add-screening-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#add-screening-form label {
+  flex: 1 1 100%;
+  font-weight: bold;
+  color: #555;
+  margin-bottom: 0.5rem;
+}
+#message-container {
+  text-align: center;
+  font-size: 1rem;
+  font-weight: bold;
+}
+#add-screening-form input {
+  flex: 1 1 calc(33.33% - 1rem);
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+#add-screening-form button {
+  flex: 1 1 100%;
+  padding: 0.8rem;
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+#add-screening-form button:hover {
+  background-color: #218838;
+}
+
+/* Screenings Tab */
+#screenings-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding: 1rem;
+}
+
+.screening {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.screening:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.screening p {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  color: #555;
+}
+
+.screening button {
+  padding: 0.5rem 1rem;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.screening button:hover {
+  background-color: #0056b3;
+}
+
+/* Tabs Container */
+.tabs {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.tab-button {
+  padding: 0.8rem 2rem;
+  margin: 0 0.5rem;
+  background-color: #333;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.tab-button:hover {
+  background-color: #555;
+}
+
+.tab-button.active {
+  background-color: #007bff;
+  color: #fff;
+}
+
+/* Tab Content */
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* Styling for Manager's Screenings List */
+#manager-screenings-list {
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: #f8f9fa; /* Light background for the list area */
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+#manager-screenings-list h3 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+.manager-screening-item {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+}
+
+.manager-screening-item p {
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+  color: #444;
+  flex-grow: 1; /* Allow text to take available space */
+}
+
+.manager-screening-item div { /* Container for buttons */
+  display: flex;
+  gap: 0.5rem; /* Space between buttons */
+  margin-top: 0.5rem; /* Add some space if buttons wrap */
+}
+
+.manager-screening-item button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.manager-screening-item button:hover {
+  transform: translateY(-2px);
+}
+
+.edit-screening {
+  background-color: #007bff; /* Blue for edit */
+  color: #fff;
+}
+
+.edit-screening:hover {
+  background-color: #0056b3;
+}
+
+.delete-screening {
+  background-color: #dc3545; /* Red for delete */
+  color: #fff;
+}
+
+.delete-screening:hover {
+  background-color: #c82333;
+}

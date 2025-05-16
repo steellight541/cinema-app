@@ -1,0 +1,34 @@
+# Gebruik een officiële Node.js runtime als parent image
+# Kies een LTS-versie, alpine is kleiner
+FROM node:18-alpine
+
+# Stel de werkdirectory in de container in
+WORKDIR /usr/src/app
+
+# Kopieer package.json en package-lock.json (of npm-shrinkwrap.json)
+# Dit maakt gebruik van Docker layer caching. Als deze bestanden niet veranderen,
+# wordt de 'npm install' stap niet opnieuw uitgevoerd bij volgende builds.
+COPY package*.json ./
+
+# Installeer project dependencies
+# Gebruik 'npm ci' voor productie builds als je een package-lock.json hebt voor deterministische builds
+RUN npm install
+
+# Kopieer de rest van de applicatiecode naar de werkdirectory
+COPY . .
+
+# De applicatie draait op poort 3000 (of de poort gespecificeerd in .env)
+# Zorg ervoor dat je PORT environment variable correct is ingesteld in je hosting omgeving
+EXPOSE 3000
+
+# Definieer de environment variable voor de poort (kan overschreven worden door hosting platform)
+ENV PORT=3000
+# Belangrijk: JWT_SECRET en TMDB_API_KEY moeten als environment variables
+# worden ingesteld in je hosting omgeving, niet hardcoded of in een .env bestand in de image.
+# ENV JWT_SECRET=your_production_jwt_secret_from_hosting_env
+# ENV TMDB_API_KEY=your_production_tmdb_api_key_from_hosting_env
+
+
+# Commando om de applicatie te starten
+# Zorg ervoor dat je server.js het hoofdbestand is dat je server start
+CMD [ "node", "server.js" ]
