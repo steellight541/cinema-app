@@ -1121,9 +1121,5 @@ if (isLoggedIn()) {
     fetchAndDisplayGenres(); // Still useful if movies tab is default
   }
   fetchScreeningsIfManager(); // Check if manager specific data needs to be loaded
-} else {
-  // login-section and its wrapper are made visible by toggleUIBasedOnRole
-  // tabs-container is hidden
-  // No need to call switchTab or fetch data for tabs
 }
 setupWebSocket();
