@@ -1,7 +1,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const QRCode = require('qrcode'); // Import QRCode library
+const QRCode = require('qrcode');
 const { verifyToken, verifyRole } = require('../middleware/authMiddleware');
 const { searchMovieByTitle, searchMoviesForSuggestions } = require('../utils/tmdb'); // Add searchMoviesForSuggestions
 
@@ -394,7 +394,7 @@ module.exports = (broadcastMessage) => {
    * @swagger
    * /api/screenings/reserve:
    *   post:
-   *     summary: Reserve a ticket for a screening and get a QR code
+   *     summary: Reserve a ticket for a screening, get a QR code, and send an email confirmation
    *     tags: [Screenings]
    *     security:
    *       - bearerAuth: []
@@ -403,39 +403,48 @@ module.exports = (broadcastMessage) => {
    *       content:
    *         application/json:
    *           schema:
-   *             $ref: '#/components/schemas/ReservationInput'
+   *             type: object
+   *             required:
+   *               - screeningId
+   *               - email  # Add email to required fields
+   *             properties:
+   *               screeningId: { type: 'integer', example: 1 }
+   *               email: { type: 'string', format: 'email', example: 'user@example.com' } # Add email property
    *     responses:
    *       200:
-   *         description: Ticket reserved successfully, includes QR code
+   *         description: Ticket reserved successfully, email sent, includes QR code
    *         content:
    *           application/json:
    *             schema:
    *               type: object
    *               properties:
-   *                 message: { type: 'string', example: 'Ticket reserved successfully' }
+   *                 message: { type: 'string', example: 'Ticket reserved successfully and email sent' }
    *                 screening: { $ref: '#/components/schemas/Screening' }
    *                 qrCodeDataUrl: { type: 'string', format: 'url', example: 'data:image/png;base64,...' }
+   *                 previewUrl: { type: 'string', example: 'https://ethereal.email/message/...' } # For Ethereal
    *       400:
-   *         description: Invalid input (e.g., screeningId missing, no tickets available, already reserved)
+   *         description: Invalid input (e.g., screeningId or email missing, no tickets available, already reserved)
    *       401:
    *         description: Unauthorized
    *       404:
    *         description: Screening not found
    *       500:
-   *         description: Server error
+   *         description: Server error or failed to send email
    */
   router.post('/reserve', verifyToken, async (req, res) => {
-    const { screeningId } = req.body;
+    const { screeningId, email } = req.body;
     const userId = req.user.id;
-    const username = req.user.username; // Get username from token
+    const username = req.user.username;
 
-    if (screeningId == null) {
-      return res.status(400).json({ message: "Screening ID is required" });
+    if (screeningId == null || !email) {
+      return res.status(400).json({ message: "Screening ID and email are required" });
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return res.status(400).json({ message: "Invalid email format" });
     }
 
     let screenings = loadScreeningsData();
     let reservations = loadReservationsData();
-
     const screeningIndex = screenings.findIndex(s => s.id === parseInt(screeningId));
 
     if (screeningIndex === -1) {
@@ -445,16 +454,17 @@ module.exports = (broadcastMessage) => {
     const screeningToBook = screenings[screeningIndex];
     const movieIdToBook = screeningToBook.movieId;
 
-    const userReservedScreeningIds = reservations[userId] || [];
-    for (const reservedScreeningId of userReservedScreeningIds) {
-      const reservedScreeningDetails = screenings.find(s => s.id === reservedScreeningId);
-      if (reservedScreeningDetails && reservedScreeningDetails.movieId === movieIdToBook) {
-        return res.status(400).json({ message: "You have already reserved a ticket for this movie." });
-      }
+    // Check for existing reservation for the same movie (not just screening) by this user
+    const userReservedScreenings = reservations[userId] || [];
+    for (const reservedScreeningId of userReservedScreenings) {
+        const reservedScreeningDetails = screenings.find(s => s.id === reservedScreeningId);
+        if (reservedScreeningDetails && reservedScreeningDetails.movieId === movieIdToBook) {
+            return res.status(400).json({ message: "You have already reserved a ticket for this movie." });
+        }
     }
 
     if (screeningToBook.ticketsAvailable > 0) {
-      screenings[screeningIndex].ticketsAvailable--; // Only this is adjusted
+      screenings[screeningIndex].ticketsAvailable--;
       saveScreeningsData(screenings);
 
       if (!reservations[userId]) {
@@ -463,16 +473,15 @@ module.exports = (broadcastMessage) => {
       reservations[userId].push(parseInt(screeningId));
       saveReservationsData(reservations);
 
-      // Generate QR Code
       const reservationData = {
         userId: userId,
         username: username,
         screeningId: screeningToBook.id,
         movieId: screeningToBook.movieId,
-        movieTitle: screeningToBook.movieTitle || 'N/A', // Gebruik opgeslagen titel
-        moviePosterPath: screeningToBook.moviePosterPath || null, // Gebruik opgeslagen poster
+        movieTitle: screeningToBook.movieTitle || 'N/A',
+        moviePosterPath: screeningToBook.moviePosterPath || null,
         screeningDate: screeningToBook.date,
-        reservedAt: new Date().toISOString() // Add a timestamp
+        reservedAt: new Date().toISOString()
       };
       const qrDataString = JSON.stringify(reservationData);
       let qrCodeDataUrl = '';
@@ -483,11 +492,75 @@ module.exports = (broadcastMessage) => {
       }
 
       broadcastMessage({ type: 'screenings_updated', payload: loadScreeningsData() });
-      res.status(200).json({
-        message: "Ticket reserved successfully",
-        screening: screenings[screeningIndex],
-        qrCodeDataUrl: qrCodeDataUrl // Send QR code data URL to client
-      });
+
+      // --- BEGIN SENDGRID EMAIL LOGIC ---
+      const sgMailInstance = req.app.get('sendgrid');
+      const verifiedSender = req.app.get('verifiedSenderEmail');
+
+      if (!sgMailInstance || !process.env.SENDGRID_API_KEY) {
+         console.error("SendGrid not configured. SENDGRID_API_KEY might be missing.");
+         return res.status(200).json({ // Still send success for reservation
+             message: "Ticket reserved successfully, but email could not be sent (email service not configured).",
+             screening: screenings[screeningIndex],
+             qrCodeDataUrl: qrCodeDataUrl
+         });
+      }
+      if (!verifiedSender) {
+         console.error("SendGrid verified sender email not configured in .env (VERIFIED_SENDER_EMAIL).");
+         return res.status(200).json({
+             message: "Ticket reserved successfully, but email could not be sent (verified sender missing).",
+             screening: screenings[screeningIndex],
+             qrCodeDataUrl: qrCodeDataUrl
+         });
+      }
+
+      // Extract base64 data from Data URL for SendGrid attachment
+      const qrAttachmentContent = qrCodeDataUrl.split("base64,")[1];
+
+      const msg = {
+        to: email,
+        from: verifiedSender, // Use your verified sender email address
+        subject: `Your Ticket for ${screeningToBook.movieTitle}`,
+        html: `
+          <h1>Your Ticket Confirmation</h1>
+          <p>Hi ${username || 'there'},</p>
+          <p>Thank you for your reservation!</p>
+          <p><strong>Movie:</strong> ${screeningToBook.movieTitle}</p>
+          <p><strong>Screening Date:</strong> ${new Date(screeningToBook.date).toLocaleString()}</p>
+          <p>Please present the QR code below (also attached) at the entrance:</p>
+          <img src="cid:ticket_qr_code" alt="Your Ticket QR Code" /> 
+          <hr>
+          <p>We look forward to seeing you!</p>
+        `,
+        attachments: qrCodeDataUrl && qrAttachmentContent ? [ // Conditionally add attachment
+         {
+           content: qrAttachmentContent,
+           filename: 'ticket-qr.png',
+           type: 'image/png',
+           disposition: 'inline', // Important for embedding with cid
+           content_id: 'ticket_qr_code' // Used in <img src="cid:ticket_qr_code">
+         }
+       ] : [],
+      };
+
+      try {
+        await sgMailInstance.send(msg);
+        res.status(200).json({
+          message: "Ticket reserved and email sent successfully!",
+          screening: screenings[screeningIndex],
+          qrCodeDataUrl: qrCodeDataUrl
+        });
+      } catch (emailError) {
+        console.error('Error sending email via SendGrid:', emailError.response ? emailError.response.body : emailError);
+        res.status(200).json({ // Or 500 if email is critical
+          message: "Ticket reserved successfully, but failed to send confirmation email.",
+          error: emailError.message,
+          screening: screenings[screeningIndex],
+          qrCodeDataUrl: qrCodeDataUrl
+        });
+      }
+      // --- END SENDGRID EMAIL LOGIC ---
+
     } else {
       res.status(400).json({ message: "No tickets available for this screening" });
     }

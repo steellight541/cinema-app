@@ -1,121 +1,145 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cinema App</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Chart.js CDN -->
-</head>
-<body>
-  <div class="container"> <!-- REMOVED popover="auto" from here -->
-    <div id="message-container" class="message"></div>
-    <div id="login-section">
-      <div id="login-form">
-        <h2>Login</h2>
-        <form id="login">
-          <label for="username">Username:</label>
-          <input type="text" id="username" required>
-          <label for="password">Password:</label>
-          <input type="password" id="password" required>
-          <button type="submit">Login</button>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cinema App</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js CDN -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
+            <!-- In your HTML file -->
+      <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script> 
+  </head>
+  <body>
+    <div class="container"> <!-- REMOVED popover="auto" from here -->
+      <div id="message-container" class="message"></div>
+      <div id="login-section">
+        <div id="login-form">
+          <h2>Login</h2>
+          <form id="login">
+            <label for="username">Username:</label>
+            <input type="text" id="username" required>
+            <label for="password">Password:</label>
+            <input type="password" id="password" required>
+            <button type="submit">Login</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div id="tabs-container" style="display:none;">
+      <div class="tabs">
+        <div class="tab-button-group"> <!-- NEW WRAPPER for tab buttons -->
+          <button class="tab-button active" id="movies-tab">Movies</button>
+          <!-- Added active class back -->
+          <button class="tab-button" id="screenings-tab">Screenings</button>
+          <button class="tab-button" id="manager-tab"
+            style="display:none;">Manager Dashboard</button>
+        </div>
+        <button id="logout-button" style="display:none;"
+          class="btn-danger">Logout</button>
+        <!-- MOVED HERE & ensured btn-danger -->
+      </div>
+      <div class="tab-content" id="movies-content">
+        <h1>Popular Movies</h1>
+        <!-- This H1 will be updated by JS based on filter -->
+        <div id="movie-filters-container" class="filter-container">
+          <div class="filter-group">
+            <label for="movie-category-select">Category:</label>
+            <select id="movie-category-select">
+              <option value="popular" selected>Popular</option>
+              <option value="upcoming">Upcoming</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="movie-genre-select">Genre:</label>
+            <select id="movie-genre-select">
+              <option value>All Genres</option>
+              <!-- Genres will be populated by JS -->
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="movie-name-search">Search by Name:</label>
+            <input type="text" id="movie-name-search"
+              placeholder="Enter movie name...">
+          </div>
+        </div>
+        <div id="movies-container"></div>
+      </div>
+      <div class="tab-content" id="screenings-content" style="display:none;">
+        <!-- New Screenings Content -->
+        <h2>Available Screenings</h2>
+        <div class="filter-container">
+          <label for="screening-date-filter">Filter by date:</label>
+          <input type="date" id="screening-date-filter">
+          <label for="screening-name-filter">Filter by movie name:</label>
+          <!-- NIEUW -->
+          <input type="text" id="screening-name-filter"
+            placeholder="Enter movie name..."> <!-- NIEUW -->
+          <button id="apply-screening-filter">Apply Filters</button>
+          <button id="clear-screening-filter">Clear Filters</button>
+        </div>
+        <div id="screenings-container"></div>
+        <div id="qr-code-container"
+          style="display:none; margin-top: 20px; text-align: center;">
+          <h3>Your Ticket QR Code:</h3>
+          <img id="ticket-qr-code-img" src alt="Ticket QR Code"
+            style="max-width: 200px;" />
+          <p><small>Scan this code at the cinema.</small></p>
+        </div>
+      </div>
+      <div class="tab-content" id="manager-content" style="display:none;">
+        <h2>Manager Dashboard</h2>
+        <form id="add-screening-form" action="#">
+          <label for="movieTitle">Movie Title:</label>
+          <!-- Gewijzigd van movieId -->
+          <input type="text" id="movieTitle" required autocomplete="off">
+          <!-- Gewijzigd van type="number" en id="movieId, Added autocomplete="off" -->
+          <div id="movie-title-suggestions" class="suggestions-list"></div>
+          <!-- NEW suggestions container -->
+          <label for="date">Date:</label>
+          <input type="datetime-local" id="date" required>
+          <label for="ticketsAvailable">Tickets Available:</label>
+          <input type="number" id="ticketsAvailable" required>
+          <button type="submit">Add Screening</button>
         </form>
-      </div>
-    </div>
-  </div>
-  <div id="tabs-container" style="display:none;">
-    <div class="tabs">
-      <div class="tab-button-group"> <!-- NEW WRAPPER for tab buttons -->
-        <button class="tab-button active" id="movies-tab">Movies</button> <!-- Added active class back -->
-        <button class="tab-button" id="screenings-tab">Screenings</button>
-        <button class="tab-button" id="manager-tab" style="display:none;">Manager Dashboard</button>
-      </div>
-      <button id="logout-button" style="display:none;" class="btn-danger">Logout</button> <!-- MOVED HERE & ensured btn-danger -->
-    </div>
-    <div class="tab-content" id="movies-content">
-      <h1>Popular Movies</h1> <!-- This H1 will be updated by JS based on filter -->
-      <div id="movie-filters-container" class="filter-container">
-        <div class="filter-group">
-          <label for="movie-category-select">Category:</label>
-          <select id="movie-category-select">
-            <option value="popular" selected>Popular</option>
-            <option value="upcoming">Upcoming</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label for="movie-genre-select">Genre:</label>
-          <select id="movie-genre-select">
-            <option value="">All Genres</option>
-            <!-- Genres will be populated by JS -->
-          </select>
-        </div>
-        <div class="filter-group">
-          <label for="movie-name-search">Search by Name:</label>
-          <input type="text" id="movie-name-search" placeholder="Enter movie name...">
+        <div id="manager-screenings-list"></div>
+        <div id="ticket-sales-chart-container"
+          style="margin-top: 2rem; max-width: 800px; margin-left:auto; margin-right:auto;">
+          <h3>Ticket Sales Overview</h3>
+          <canvas id="ticketSalesChart"></canvas>
         </div>
       </div>
-      <div id="movies-container"></div>
     </div>
-    <div class="tab-content" id="screenings-content" style="display:none;"> <!-- New Screenings Content -->
-      <h2>Available Screenings</h2>
-      <div class="filter-container">
-        <label for="screening-date-filter">Filter by date:</label>
-        <input type="date" id="screening-date-filter">
-        <label for="screening-name-filter">Filter by movie name:</label> <!-- NIEUW -->
-        <input type="text" id="screening-name-filter" placeholder="Enter movie name..."> <!-- NIEUW -->
-        <button id="apply-screening-filter">Apply Filters</button>
-        <button id="clear-screening-filter">Clear Filters</button>
-      </div>
-      <div id="screenings-container"></div>
-      <div id="qr-code-container" style="display:none; margin-top: 20px; text-align: center;">
-        <h3>Your Ticket QR Code:</h3>
-        <img id="ticket-qr-code-img" src="" alt="Ticket QR Code" style="max-width: 200px;"/>
-        <p><small>Scan this code at the cinema.</small></p>
-      </div>
-    </div>
-    <div class="tab-content" id="manager-content" style="display:none;">
-      <h2>Manager Dashboard</h2>
-      <form id="add-screening-form" action="#">
-        <label for="movieTitle">Movie Title:</label> <!-- Gewijzigd van movieId -->
-        <input type="text" id="movieTitle" required autocomplete="off"> <!-- Gewijzigd van type="number" en id="movieId, Added autocomplete="off" -->
-        <div id="movie-title-suggestions" class="suggestions-list"></div> <!-- NEW suggestions container -->
-        <label for="date">Date:</label>
-        <input type="datetime-local" id="date" required>
-        <label for="ticketsAvailable">Tickets Available:</label>
-        <input type="number" id="ticketsAvailable" required>
-        <button type="submit">Add Screening</button>
+    <script src="app.js"></script>
+
+    <!-- Popover for Editing Screenings -->
+    <div id="edit-screening-popover" popover="auto">
+      <form id="edit-screening-popover-form">
+        <h3>Edit Screening</h3>
+        <input type="hidden" id="edit-screening-id-popover" name="screeningId">
+
+        <label for="edit-movieTitle-popover">Movie Title:</label>
+        <input type="text" id="edit-movieTitle-popover" name="movieTitle"
+          required>
+        <!-- We can add suggestions here later if desired, similar to add screening -->
+
+        <label for="edit-date-popover">Date & Time:</label>
+        <input type="datetime-local" id="edit-date-popover" name="date"
+          required>
+
+        <label for="edit-ticketsAvailable-popover">Tickets Available:</label>
+        <input type="number" id="edit-ticketsAvailable-popover"
+          name="ticketsAvailable" min="0" required>
+
+        <div class="popover-actions">
+          <button type="submit" class="btn-success">Save Changes</button>
+          <button type="button" popovertarget="edit-screening-popover"
+            popovertargetaction="hide" class="btn-secondary">Cancel</button>
+        </div>
       </form>
-      <div id="manager-screenings-list"></div>
-      <div id="ticket-sales-chart-container" style="margin-top: 2rem; max-width: 800px; margin-left:auto; margin-right:auto;">
-        <h3>Ticket Sales Overview</h3>
-        <canvas id="ticketSalesChart"></canvas>
-      </div>
     </div>
-  </div>
-  <script src="app.js"></script>
 
-  <!-- Popover for Editing Screenings -->
-  <div id="edit-screening-popover" popover="auto">
-    <form id="edit-screening-popover-form">
-      <h3>Edit Screening</h3>
-      <input type="hidden" id="edit-screening-id-popover" name="screeningId">
-      
-      <label for="edit-movieTitle-popover">Movie Title:</label>
-      <input type="text" id="edit-movieTitle-popover" name="movieTitle" required>
-      <!-- We can add suggestions here later if desired, similar to add screening -->
-
-      <label for="edit-date-popover">Date & Time:</label>
-      <input type="datetime-local" id="edit-date-popover" name="date" required>
-
-      <label for="edit-ticketsAvailable-popover">Tickets Available:</label>
-      <input type="number" id="edit-ticketsAvailable-popover" name="ticketsAvailable" min="0" required>
-      
-      <div class="popover-actions">
-        <button type="submit" class="btn-success">Save Changes</button>
-        <button type="button" popovertarget="edit-screening-popover" popovertargetaction="hide" class="btn-secondary">Cancel</button>
-      </div>
-    </form>
-  </div>
-
-</body>
+  </body>
 </html>

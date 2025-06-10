@@ -3,68 +3,72 @@ require('dotenv').config({
 });
 const express = require('express');
 const cors = require('cors');
-const http = require('http'); // Import http module
-const { WebSocketServer } = require('ws'); // Import WebSocketServer
-const path = require('path'); // Make sure path module is imported if not already
+const http = require('http');
+const mqtt = require('mqtt'); // Add MQTT client
+const path = require('path');
 
 const moviesRoute = require('./routes/movies');
-const screeningsRouteModule = require('./routes/screenings'); // Import as a module that exports a function
+const screeningsRouteModule = require('./routes/screenings');
 const authRoute = require('./routes/auth');
 
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+const sgMail = require('@sendgrid/mail');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const MQTT_BROKER_URL = process.env.MQTT_BROKER_URL || 'mqtt://localhost:1883'; // Add MQTT Broker URL
+const MQTT_TOPIC_SCREENINGS = 'cinema/screenings/updated'; // Define a topic
 
-// Create HTTP server from Express app
+// --- BEGIN SENDGRID CONFIGURATION ---
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+app.set('sendgrid', sgMail);
+app.set('verifiedSenderEmail', process.env.VERIFIED_SENDER_EMAIL);
+// --- END SENDGRID CONFIGURATION ---
+
 const server = http.createServer(app);
 
-// Create WebSocket server and attach it to the HTTP server
-const wss = new WebSocketServer({ server });
+// --- BEGIN MQTT CLIENT SETUP ---
+const mqttClient = mqtt.connect(MQTT_BROKER_URL);
 
-const clients = new Set();
-
-// Broadcast function to send messages to all connected clients
-const broadcastMessage = (message) => {
-  console.log("Broadcasting message:", message);
-  clients.forEach(client => {
-    if (client.readyState === WebSocket.OPEN) { // WebSocket is a constructor, use client.OPEN
-      try {
-        client.send(JSON.stringify(message));
-      } catch (error) {
-        console.error("Error sending message to client:", error);
-      }
-    }
-  });
-};
-
-wss.on('connection', (ws) => {
-  console.log('Client connected to WebSocket');
-  clients.add(ws);
-
-  ws.on('message', (message) => {
-    console.log('Received message from client:', message.toString());
-    // For now, we primarily broadcast from server to clients.
-    // You could implement client-to-server messages here if needed.
-  });
-
-  ws.on('close', () => {
-    console.log('Client disconnected from WebSocket');
-    clients.delete(ws);
-  });
-
-  ws.on('error', (error) => {
-    console.error('WebSocket error with a client:', error);
-    clients.delete(ws); // Ensure client is removed on error
-  });
+mqttClient.on('connect', () => {
+    // You could subscribe to topics here if the backend needs to listen for messages
 });
+
+mqttClient.on('error', (error) => {
+    console.error('MQTT Client Error:', error);
+});
+
+mqttClient.on('reconnect', () => {
+    console.log('MQTT client reconnecting...');
+});
+
+mqttClient.on('close', () => {
+    console.log('MQTT client disconnected.');
+});
+// --- END MQTT CLIENT SETUP ---
+
+
+// Modified broadcastMessage function to publish to MQTT
+const broadcastMessage = (message) => {
+  if (mqttClient.connected) {
+    const topic = MQTT_TOPIC_SCREENINGS; // Or determine topic based on message type
+    const payload = JSON.stringify(message);
+    mqttClient.publish(topic, payload, (err) => {
+      if (err) {
+        console.error('MQTT publish error:', err);
+      } else {
+      }
+    });
+  } else {
+    console.warn('MQTT client not connected. Message not published:', message);
+  }
+};
 
 app.use(cors());
 app.use(express.json());
 app.use('/api/movies', moviesRoute);
-// Pass the broadcastMessage function to the screenings route module
-app.use('/api/screenings', screeningsRouteModule(broadcastMessage));
+app.use('/api/screenings', screeningsRouteModule(broadcastMessage)); // Pass the new broadcastMessage
 app.use('/api/auth', authRoute);
 
 // Swagger Options
@@ -195,7 +199,6 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 // console.log(JSON.stringify(swaggerSpec, null, 2)); 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Start the HTTP server (which also hosts the WebSocket server)
 server.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT} and WebSocket server is active`);
+  console.log(`Server running on http://localhost:${PORT} and MQTT client connecting...`);
 });

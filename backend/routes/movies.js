@@ -221,7 +221,6 @@ router.put('/:id', verifyToken, verifyRole('manager'), (req, res) => {
   }
 
   const updatedMovie = { id: parseInt(id), title, vote_average: parseFloat(vote_average), poster_path };
-  console.log(`Simulating update for movie ${id}:`, updatedMovie);
   res.json(updatedMovie);
 });
 

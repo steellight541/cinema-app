@@ -25,5 +25,86 @@
     "date": "2025-05-16T17:42",
     "initialTicketsAvailable": 20,
     "ticketsAvailable": 19
+  },
+  {
+    "id": 4,
+    "movieId": 348,
+    "movieTitle": "Alien",
+    "moviePosterPath": "/vfrQk5IPloGg1v9Rzbh2Eg3VGyM.jpg",
+    "date": "2025-06-10T15:24",
+    "initialTicketsAvailable": 60,
+    "ticketsAvailable": 59
+  },
+  {
+    "id": 5,
+    "movieId": 335,
+    "movieTitle": "Once Upon a Time in the West",
+    "moviePosterPath": "/qbYgqOczabWNn2XKwgMtVrntD6P.jpg",
+    "date": "2025-06-10T17:35",
+    "initialTicketsAvailable": 80,
+    "ticketsAvailable": 79
+  },
+  {
+    "id": 6,
+    "movieId": 1396766,
+    "movieTitle": "Tree",
+    "moviePosterPath": null,
+    "date": "2025-06-10T13:39",
+    "initialTicketsAvailable": 80,
+    "ticketsAvailable": 79
+  },
+  {
+    "id": 7,
+    "movieId": 928159,
+    "movieTitle": "Testing",
+    "moviePosterPath": null,
+    "date": "2025-06-10T13:40",
+    "initialTicketsAvailable": 15,
+    "ticketsAvailable": 14
+  },
+  {
+    "id": 8,
+    "movieId": 53408,
+    "movieTitle": "Work",
+    "moviePosterPath": "/nBC2YhyQQmiGP28v5cYHth3bAxz.jpg",
+    "date": "2025-06-10T14:07",
+    "initialTicketsAvailable": 60,
+    "ticketsAvailable": 59
+  },
+  {
+    "id": 9,
+    "movieId": 1081399,
+    "movieTitle": "Bee",
+    "moviePosterPath": "/p8zJofHPnP3fpEGylf8CqKrS1IF.jpg",
+    "date": "2025-06-10T14:11",
+    "initialTicketsAvailable": 10000,
+    "ticketsAvailable": 9999
+  },
+  {
+    "id": 10,
+    "movieId": 870028,
+    "movieTitle": "The Accountant²",
+    "moviePosterPath": "/kMDUS7VmFhb2coRfVBoGLR8ADBt.jpg",
+    "date": "2025-06-10T14:15",
+    "initialTicketsAvailable": 1000,
+    "ticketsAvailable": 999
+  },
+  {
+    "id": 11,
+    "movieId": 34583,
+    "movieTitle": "The Final",
+    "moviePosterPath": "/ff7UI8q51sOArKafaaAOQnnfpne.jpg",
+    "date": "2025-06-10T14:23",
+    "initialTicketsAvailable": 2000,
+    "ticketsAvailable": 1998
+  },
+  {
+    "id": 12,
+    "movieId": 447332,
+    "movieTitle": "A Quiet Place",
+    "moviePosterPath": "/nAU74GmpUk7t5iklEp3bufwDq4n.jpg",
+    "date": "2025-06-10T14:45",
+    "initialTicketsAvailable": 5500,
+    "ticketsAvailable": 5499
   }
 ]

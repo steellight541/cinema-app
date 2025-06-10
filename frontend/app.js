@@ -35,8 +35,11 @@ let allFetchedMovies = [];
 let allScreeningsForManager = [];
 let currentMovieCategory = 'popular';
 let currentGenreId = '';
-let webSocket;
-let salesChart = null;
+let mqttClient; // Add MQTT client global variable
+let salesChart; // Add salesChart global variable
+
+const MQTT_BROKER_URL_FRONTEND = 'ws://localhost:9001'; // IMPORTANT: Use WebSocket port for browser MQTT
+const MQTT_TOPIC_SCREENINGS_FRONTEND = 'cinema/screenings/updated';
 
 // Utility functions
 const debounce = (func, delay) => {
@@ -70,55 +73,83 @@ const showMessage = (message, type = 'info') => {
   }, 5000);
 };
 
-// WebSocket setup
-const setupWebSocket = () => {
-  const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const wsUrl = `${wsProtocol}//localhost:3000`;
+// MQTT setup
+const setupMQTT = () => {
+  // Note: Browsers connect to MQTT brokers over WebSockets.
+  // Your MQTT broker needs to be configured to listen on a WebSocket port.
+  // For Mosquitto, you'd add listeners in mosquitto.conf:
+  // listener 1883
+  // listener 9001 protocol websockets
+  // Ensure MQTT_BROKER_URL_FRONTEND points to the WebSocket listener of your broker.
+  
+  if (typeof mqtt === 'undefined') {
+      console.error("MQTT.js library not loaded. Make sure it's included in your HTML.");
+      showMessage("Real-time updates unavailable (MQTT library missing).", "error");
+      return;
+  }
 
-  webSocket = new WebSocket(wsUrl);
+  mqttClient = mqtt.connect(MQTT_BROKER_URL_FRONTEND);
 
-  webSocket.onopen = () => {
-    console.log('WebSocket connection established');
-  };
+  mqttClient.on('connect', () => {
+    showMessage('Real-time updates connected.', 'info');
+    
+    // Subscribe to the topic the backend publishes to
+    mqttClient.subscribe(MQTT_TOPIC_SCREENINGS_FRONTEND, (err) => {
+      if (err) {
+        console.error('Failed to subscribe to MQTT topic:', MQTT_TOPIC_SCREENINGS_FRONTEND, err);
+        showMessage('Failed to subscribe for live updates.', 'error');
+      } else {
+      }
+    });
+  });
 
-  webSocket.onmessage = (event) => {
+  mqttClient.on('message', (topic, message) => {
+    // message is Buffer, convert to string
+    const messageString = message.toString();
+
     try {
-      const message = JSON.parse(event.data);
-      console.log('WebSocket message received:', message);
+      const parsedMessage = JSON.parse(messageString);
 
-      if (message.type === 'screenings_updated') {
-        allScreeningsForManager = message.payload;
+      // Adapt your existing message handling logic here
+      if (topic === MQTT_TOPIC_SCREENINGS_FRONTEND && parsedMessage.type === 'screenings_updated') {
+        allScreeningsForManager = parsedMessage.payload; // Assuming this global var is still used
         const screeningDateFilterInput = document.getElementById('screening-date-filter');
         const currentFilterDate = screeningDateFilterInput?.value;
         
-        let userViewScreenings = message.payload;
+        let userViewScreenings = parsedMessage.payload;
         if (currentFilterDate) {
           userViewScreenings = userViewScreenings.filter(screening => 
             screening.date.startsWith(currentFilterDate)
           );
         }
-        allFetchedScreenings = userViewScreenings;
+        allFetchedScreenings = userViewScreenings; // Assuming this global var is still used
 
-        applyClientSideFilters();
+        applyClientSideFilters(); // Assuming this function exists and updates UI
 
-        if (managerTab.classList.contains('active')) {
-          displayManagerScreenings(message.payload);
-          renderTicketSalesChart(message.payload);
+        if (managerTab.classList.contains('active')) { // managerTab needs to be defined
+          displayManagerScreenings(parsedMessage.payload); // Assuming this function exists
+          renderTicketSalesChart(parsedMessage.payload); // Assuming this function exists
         }
-        showMessage('Screenings have been updated live!', 'info');
+        showMessage('Screenings have been updated live via MQTT!', 'info');
       }
+      // Add other message type handlers if needed
     } catch (error) {
-      console.error('Error processing WebSocket message:', error);
+      console.error('Error processing MQTT message:', error);
     }
-  };
+  });
 
-  webSocket.onclose = (event) => {
-    console.log('WebSocket connection closed:', event.reason, event.code);
-  };
+  mqttClient.on('error', (error) => {
+    console.error('MQTT connection error:', error);
+    showMessage('Real-time update connection error.', 'error');
+  });
 
-  webSocket.onerror = (error) => {
-    console.error('WebSocket error:', error);
-  };
+  mqttClient.on('reconnect', () => {
+    showMessage('Reconnecting for live updates...', 'info');
+  });
+  
+  mqttClient.on('close', () => {
+    showMessage('Real-time updates disconnected.', 'warning');
+  });
 };
 
 // Movie functions
@@ -418,6 +449,20 @@ const handleReserveTicket = async (screeningId) => {
     return;
   }
 
+  // 1. Prompt for email
+  const userEmail = prompt("Please enter your email address to receive your ticket confirmation:");
+
+  if (!userEmail) {
+    showMessage("Email address is required to reserve a ticket.", "info");
+    return; // Exit if no email is provided
+  }
+
+  // Basic email validation (optional, but good practice)
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEmail)) {
+    showMessage("Please enter a valid email address.", "error");
+    return;
+  }
+
   const reserveButton = document.querySelector(`.reserve-ticket[data-id="${screeningId}"]`);
   const originalButtonText = reserveButton?.textContent || 'Reserve Ticket';
   
@@ -433,43 +478,62 @@ const handleReserveTicket = async (screeningId) => {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ screeningId: parseInt(screeningId) }),
+      body: JSON.stringify({ 
+        screeningId: parseInt(screeningId),
+        email: userEmail // 2. Include email in the request body
+      }),
     });
 
     const responseData = await response.json();
 
     if (response.ok) {
-      showMessage('Ticket reserved successfully! Your QR code is below.', 'success');
+      // 3. Update success message based on backend response
+      let successMsg = responseData.message || 'Ticket reserved successfully!';
+      if (responseData.previewUrl) { // For Ethereal email testing
+        successMsg += ` Email preview: ${responseData.previewUrl}`;
+      } else if (responseData.message && responseData.message.includes("email sent")) {
+        successMsg = 'Ticket reserved and email confirmation sent!';
+      } else {
+         successMsg = 'Ticket reserved! Check your email for confirmation.';
+      }
+      showMessage(successMsg, 'success');
+
 
       if (responseData.qrCodeDataUrl && ticketQrCodeImg && qrCodeContainer) {
         ticketQrCodeImg.src = responseData.qrCodeDataUrl;
         qrCodeContainer.style.display = 'block';
-      } else {
-        showMessage('Ticket reserved, but QR code could not be generated.', 'warning');
+      } else if (!responseData.qrCodeDataUrl && responseData.message && !responseData.message.toLowerCase().includes("failed")) {
+        // If ticket was reserved but QR somehow not generated on backend, but no explicit failure
+        showMessage(successMsg + ' QR code display unavailable.', 'warning');
       }
 
+
       // Update button to show sold out if no tickets left
+      // The backend response for 'screenings[screeningIndex]' might not be directly available
+      // in responseData.ticketsAvailable. Let's assume the WebSocket update will handle UI.
+      // Or, if the backend sends back the updated screening's ticketsAvailable:
+      const updatedScreeningInfo = responseData.screening; // Assuming backend sends this
       if (reserveButton) {
-        const updatedTicketsAvailable = responseData.ticketsAvailable || 0;
-        if (updatedTicketsAvailable === 0) {
+        const ticketsAvailableAfterReservation = updatedScreeningInfo ? updatedScreeningInfo.ticketsAvailable : (parseInt(reserveButton.parentElement.querySelector('.tickets-available').textContent) -1) ;
+        
+        if (ticketsAvailableAfterReservation <= 0) {
           reserveButton.textContent = 'Sold Out';
           reserveButton.disabled = true;
         } else {
-          reserveButton.textContent = originalButtonText;
+          reserveButton.textContent = originalButtonText; // Or "Reserve Another"
           reserveButton.disabled = false;
         }
         
-        // Update the tickets available display
+        // Update the tickets available display (WebSocket should also do this)
         const ticketsSpan = document.querySelector(`span.tickets-available[data-screening-id="${screeningId}"]`);
         if (ticketsSpan) {
-          ticketsSpan.textContent = updatedTicketsAvailable;
+          ticketsSpan.textContent = ticketsAvailableAfterReservation;
         }
       }
     } else {
       console.error('Failed to reserve ticket:', responseData);
       showMessage(responseData.message || 'Failed to reserve ticket. Please try again.', 'error');
       
-      // Reset button on error
       if (reserveButton) {
         reserveButton.textContent = originalButtonText;
         reserveButton.disabled = false;
@@ -479,7 +543,6 @@ const handleReserveTicket = async (screeningId) => {
     console.error('Error reserving ticket:', error);
     showMessage('An error occurred while reserving. Please try again.', 'error');
     
-    // Reset button on error
     if (reserveButton) {
       reserveButton.textContent = originalButtonText;
       reserveButton.disabled = false;
@@ -970,21 +1033,13 @@ moviesTab?.addEventListener('click', () => switchTab('movies'));
 screeningsTab?.addEventListener('click', () => switchTab('screenings'));
 managerTab?.addEventListener('click', () => switchTab('manager'));
 
-// Initialize application
-const initializeApp = () => {
-  const savedTab = localStorage.getItem('activeTab') || 'movies';
+// Initialization
+document.addEventListener('DOMContentLoaded', () => {
   toggleUIBasedOnRole();
 
-  if (isLoggedIn()) {
-    tabsContainer.style.display = 'block';
-    switchTab(savedTab);
-    if (savedTab === 'movies') {
-      fetchAndDisplayGenres();
-    }
-  }
-  
-  setupWebSocket();
-};
+  const savedTab = localStorage.getItem('activeTab') || 'movies';
+  switchTab(savedTab);
 
-// Start the application
-initializeApp();
+  // Only setup MQTT here, after the initial UI setup
+  setupMQTT();
+});
